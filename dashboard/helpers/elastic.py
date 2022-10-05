@@ -20,7 +20,7 @@ def get_results(query, source):
         'query': query,
         'page': {
             "current": 1,
-            "size": 1_000
+            "size": 10
         }
     }
     response = requests.post(url, headers=headers, json=data)
