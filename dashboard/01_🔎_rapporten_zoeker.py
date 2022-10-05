@@ -11,15 +11,19 @@ st.set_page_config(
 )
 st.markdown("# Rapporten zoeker 🔎")
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns([1, 0.5, 0.5])
+
 query = col1.text_input('Rapporten zoekterm')
 source = col2.selectbox(
     'Welke bron wil je zoeken?',
     ('Alle', 'Rekenkamer', 'Rathenau'))
+limit = col3.selectbox(
+    'Aantal resultaten',
+    (10, 25, 50, 100, 250, 500, 1000))
     
 
 if query is not None and query != '':
-    df = get_results(query, source)
+    df = get_results(query=query, source=source, limit=limit)
     
     zip_file_name = f"tmp/zips/{query}.zip"
     if os.path.exists(zip_file_name):

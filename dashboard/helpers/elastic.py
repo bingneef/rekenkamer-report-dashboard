@@ -8,7 +8,7 @@ ENGINE_BASE_URL = st.secrets["ENGINE_BASE_URL"]
 ENGINE_AUTH = st.secrets["ENGINE_AUTH"]
 
 
-def get_results(query, source):
+def get_results(query, source, limit=10):
     engine = source.lower()
     if engine == 'alle':
         engine = 'rapporten'
@@ -20,7 +20,7 @@ def get_results(query, source):
         'query': query,
         'page': {
             "current": 1,
-            "size": 10
+            "size": limit
         }
     }
     response = requests.post(url, headers=headers, json=data)
