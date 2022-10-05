@@ -1,6 +1,10 @@
 # Streamlit secrets
 secrets.toml
 
+# Generate artifacts
+tmp
+!tmp/**/.gitkeep
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
