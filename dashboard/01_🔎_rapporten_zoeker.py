@@ -23,7 +23,7 @@ if query is not None and query != '':
     
     zip_file_name = f"tmp/zips/{query}.zip"
     if os.path.exists(zip_file_name):
-        with open("tmp.zip", "rb") as file:
+        with open(zip_file_name, "rb") as file:
             btn = st.download_button(
                 label="Download ZIP",
                 data=file,
