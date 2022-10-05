@@ -34,7 +34,8 @@ if query is not None and query != '':
         if st.button('Genereer zipbestand'):
             generate_zip(df, query)
 
-    show_df = df[['doc_source', 'title', 'created_at', 'url']]
+    show_df = df.copy()
+    show_df = show_df[['doc_source', 'title', 'created_at', 'url']]
     show_df['created_at'] = show_df['created_at'].apply(lambda x: x.split('T')[0])
     show_df['doc_source'] = show_df['doc_source'].apply(lambda x: x.capitalize())
     show_df = show_df.rename(
