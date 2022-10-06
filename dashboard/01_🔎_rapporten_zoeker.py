@@ -86,19 +86,25 @@ if query is not None and query != '':
         ax.legend(title='Bron', loc='upper left', labels=labels)
         ax.set_xticks(range(df['year'].min(), df['year'].max() + 1))
         plt.xticks(rotation=45)
-        plt.title("Aantal rapporten per jaar")
+        plt.title("Aantal rapporten per jaar per bron")
 
         col1, col2 = st.columns(2)
         col1.write(fig)
 
         fig = plt.figure(figsize=(10,5))
-        df = df.groupby(['month', 'year'])['uid'].count()
+        df_heatmap = df.groupby(['month', 'year'])['uid'].count()
+        df_heatmap = df_heatmap.reset_index().pivot_table(columns='year',index='month',values='uid', fill_value=0)
+        df_heatmap = df_heatmap.reindex(np.arange(df['year'].min(), 2023), axis=1, fill_value=0)
+        df_heatmap = df_heatmap.reindex(np.arange(1,13), axis=0, fill_value=0)
+
         ax = sns.heatmap(
-            df.reset_index().pivot_table(columns='year',index='month',values='uid').reindex(np.arange(2000, 2022), axis=1, fill_value=None).reindex(np.arange(1,13), axis=0, fill_value=None), 
-            cmap="Greens",
+            df_heatmap, 
+            cmap="rocket_r",
             yticklabels=['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December']
         )
-        # ax.set_ylim(0, 11)
+        ax.set(xlabel='Jaar', ylabel='Maand')
+        plt.xticks(rotation=45)
+        plt.title("Aantal rapporten per maand en jaar")
         col2.write(fig)
 
 focus_first_input()
