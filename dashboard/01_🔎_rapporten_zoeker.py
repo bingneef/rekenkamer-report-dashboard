@@ -1,6 +1,6 @@
 import streamlit as st
 from helpers.elastic import get_results
-from helpers.zip import generate_zip
+from helpers.zip import generate_zip, zip_ready
 import os
 
 
@@ -26,7 +26,7 @@ if query is not None and query != '':
     df = get_results(query=query, source=source, limit=limit)
     
     zip_file_name = f"tmp/zips/{query}.zip"
-    if os.path.exists(zip_file_name):
+    if zip_ready(df, query):
         with open(zip_file_name, "rb") as file:
             btn = st.download_button(
                 label="Download ZIP",
@@ -35,8 +35,8 @@ if query is not None and query != '':
                 mime="application/zip"
             )
     else:
-        if st.button('Genereer zipbestand'):
-            generate_zip(df, query)
+        st.button('Genereer zipbestand', on_click=lambda: generate_zip(df, query))
+            
 
     show_df = df.copy()
     show_df = show_df[['doc_source', 'title', 'created_at', 'url']]
