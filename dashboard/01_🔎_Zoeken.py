@@ -9,7 +9,6 @@ import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
 from helpers.input import focus_first_input
-import streamlit_modal as modal
 
 
 st.set_page_config(

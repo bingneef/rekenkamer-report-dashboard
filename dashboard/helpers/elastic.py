@@ -22,6 +22,7 @@ def get_engine_stats():
 
         engines.append({
             'name': api_engine['name'],
+            'language': api_engine['language'],
             'document_count': api_engine['document_count'],
         })
 

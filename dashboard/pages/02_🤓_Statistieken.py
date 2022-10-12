@@ -15,9 +15,12 @@ col1.metric("Aantal bronnen", engine_stats['total_engines'])
 col2.metric("Aantal documenten", engine_stats['total_documents'])
 
 df_engines = engine_stats['df_engines']
+df_engines['name'] = df_engines['name'].str.title()
+df_engines['language'] = df_engines['language'].str.upper()
 df_engines = df_engines.rename(
     columns={
         'name': "Naam", 
+        'language': "Taal", 
         'document_count': "Aantal documenten"
     }
 )
