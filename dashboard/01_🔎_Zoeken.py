@@ -9,21 +9,22 @@ import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
 from helpers.input import focus_first_input
+import streamlit_modal as modal
 
 
 st.set_page_config(
-    page_title="Rapporten zoeker", 
+    page_title="Zoeken", 
     page_icon="🔎", 
     layout="wide"
 )
-st.markdown("# Rapporten zoeker 🔎")
+st.markdown("# Zoeken 🔎")
 
 col1, col2, col3 = st.columns([1, 0.5, 0.5])
 
 query = col1.text_input('Rapporten zoekterm')
 source = col2.selectbox(
     'Welke bron wil je zoeken?',
-    ('Alle', 'Rekenkamer', 'Rathenau'))
+    ('Alle', 'Rekenkamer', 'Rathenau', 'Kamervragen'))
 limit = col3.selectbox(
     'Aantal resultaten',
     (10, 25, 50, 100, 250, 500, 1000),
@@ -58,9 +59,10 @@ if query is not None and query != '':
             st.button('Genereer zipbestand', on_click=lambda: generate_zip(df, query))
         
         # Dataframe table
-        show_df = df[['doc_source', 'title', 'created_at_fmt', 'url']]
+        show_df = df[['score', 'doc_source', 'title', 'created_at_fmt', 'url']]
         show_df = show_df.rename(
             columns={
+                'score': "Score", 
                 'title': "Titel", 
                 'doc_source': "Bron", 
                 'created_at_fmt': "Publicatie datum", 
