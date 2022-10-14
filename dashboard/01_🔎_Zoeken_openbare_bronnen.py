@@ -1,21 +1,23 @@
 import streamlit as st
-from helpers.elastic import get_results
-from helpers.zip import generate_zip, zip_ready
 import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import pandas as pd
 import numpy as np
-import streamlit.components.v1 as components
-from helpers.input import focus_first_input
-
 
 st.set_page_config(
     page_title="Zoeken", 
     page_icon="🔎", 
     layout="wide"
 )
+
+
+from helpers.app_engine import search
+from helpers.zip import generate_zip, zip_ready
+from helpers.input import focus_first_input
+
+
 st.markdown("# Zoeken 🔎")
 
 col1, col2, col3 = st.columns([1, 0.5, 0.5])
@@ -30,7 +32,7 @@ limit = col3.selectbox(
     index=3)
 
 if query is not None and query != '':
-    df = get_results(query=query, source=source, limit=limit)
+    df = search(query=query, source=source, limit=limit)
 
     if df.shape[0] == 0:
         st.write("Geen resultaten gevonden")

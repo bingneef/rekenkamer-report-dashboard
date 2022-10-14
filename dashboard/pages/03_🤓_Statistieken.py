@@ -1,12 +1,16 @@
 import streamlit as st
-from helpers.elastic import get_engine_stats
+
 
 st.set_page_config(
     page_title="Rapporten zoeker", 
     page_icon="🤓"
 )
-st.markdown("# Statistieken 🤓")
 
+
+from helpers.app_engine import get_engine_stats
+
+
+st.markdown("# Statistieken 🤓")
 
 engine_stats = get_engine_stats()
 
