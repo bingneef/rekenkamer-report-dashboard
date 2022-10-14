@@ -1,16 +1,16 @@
 import streamlit as st
 import io
 import pandas as pd
+from helpers.app_engine import search, get_private_source_details, handle_private_source, remove_private_source
+from helpers.state import get_private_engine_name
+from helpers.input import focus_first_input
+
 
 st.set_page_config(
     page_title="Zoeken in eigen bron", 
     page_icon="🕵️", 
     layout="wide"
 )
-
-from helpers.app_engine import search, get_private_source_details, handle_private_source, remove_private_source
-from helpers.state import get_private_engine_name
-from helpers.input import focus_first_input
 
 
 st.markdown("# Zoeken in eigen bron 🕵️")
@@ -22,7 +22,7 @@ if get_private_engine_name() is not None:
     )
     col1, col2 = st.columns([1, 0.5])
 
-    query = col1.text_input('Rapporten zoekterm')
+    query = col1.text_input('Documenten zoekterm')
     limit = col2.selectbox(
         'Aantal resultaten',
         (10, 25, 50, 100, 250, 500, 1000),

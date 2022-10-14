@@ -5,24 +5,22 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import pandas as pd
 import numpy as np
-
-st.set_page_config(
-    page_title="Zoeken", 
-    page_icon="🔎", 
-    layout="wide"
-)
-
-
 from helpers.app_engine import search
 from helpers.zip import generate_zip, zip_ready
 from helpers.input import focus_first_input
 
 
-st.markdown("# Zoeken 🔎")
+st.set_page_config(
+    page_title="Zoeken in openbare bronnen", 
+    page_icon="🔎", 
+    layout="wide"
+)
+
+st.markdown("# Zoeken in openbare bronnen🔎")
 
 col1, col2, col3 = st.columns([1, 0.5, 0.5])
 
-query = col1.text_input('Rapporten zoekterm')
+query = col1.text_input('Documenten zoekterm')
 source = col2.selectbox(
     'Welke bron wil je zoeken?',
     ('Alle', 'Rekenkamer', 'Rathenau', 'Kamervragen', 'Kamerbrieven'))
