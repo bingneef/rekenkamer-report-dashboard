@@ -17,7 +17,7 @@ app_search = AppSearch(
 
 
 def search(query, source, limit=10):
-    engine = source.lower()
+    engine = source.lower().replace(" ", "-")
     if engine == 'alle':
         engine = 'rapporten'
 
