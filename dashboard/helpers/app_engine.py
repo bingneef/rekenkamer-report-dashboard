@@ -16,7 +16,8 @@ app_search = AppSearch(
 )
 
 
-def search(query, source, limit=10):
+@st.experimental_memo(show_spinner=False)
+def search(query, source, limit=10, filters={}):
     engine = source.lower().replace(" ", "-")
     if engine == 'alle':
         engine = 'all'
@@ -25,7 +26,12 @@ def search(query, source, limit=10):
     elif engine == 'alle-kamerstukken':
         engine = 'kamerstukken'
 
-    data = app_search.search(engine_name=engine, query=query, page_size=limit)
+    data = app_search.search(
+        engine_name=engine, 
+        query=query, 
+        page_size=limit,
+        filters=filters
+    )
 
     results = []
     for result in data['results']:
@@ -34,18 +40,20 @@ def search(query, source, limit=10):
             'title': result['title']['raw'],
             'url': result['url']['raw'],
             'doc_source': result['doc_source']['raw'],
+            'extension': result['extension']['raw'],
             'created_at': result['created_at']['raw'],
             'score': result['_meta']['score']
         })
 
     df = pd.DataFrame(
         results, 
-        columns=['uid', 'title', 'url', 'doc_source', 'created_at', 'score']
+        columns=['uid', 'title', 'url', 'doc_source', 'extension', 'created_at', 'score']
     )
 
     return df
 
 
+@st.experimental_memo(show_spinner=False)
 def get_engine_stats():
     api_engines = app_search.list_engines()
 
@@ -110,6 +118,7 @@ def handle_private_source(documents):
     return name
 
 
+@st.experimental_memo(show_spinner=False)
 def _dataframe_from_documents(documents):
     data = []
     for document in documents:
@@ -117,7 +126,7 @@ def _dataframe_from_documents(documents):
             "uid": str(uuid.uuid4()),
             "url": document.name,
             "body": document.read().decode("utf-8") ,
-            "publish_date": '2022-10-14',
+            "publish_date": '2022-10-20',
         })
 
     return pd.DataFrame.from_dict(data)
