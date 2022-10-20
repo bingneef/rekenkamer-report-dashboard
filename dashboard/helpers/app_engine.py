@@ -19,7 +19,11 @@ app_search = AppSearch(
 def search(query, source, limit=10):
     engine = source.lower().replace(" ", "-")
     if engine == 'alle':
+        engine = 'all'
+    elif engine == 'alle-rapporten':
         engine = 'rapporten'
+    elif engine == 'alle-kamerstukken':
+        engine = 'kamerstukken'
 
     data = app_search.search(engine_name=engine, query=query, page_size=limit)
 

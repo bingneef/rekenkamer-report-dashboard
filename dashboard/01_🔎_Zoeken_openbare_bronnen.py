@@ -23,7 +23,7 @@ col1, col2, col3 = st.columns([1, 0.5, 0.5])
 query = col1.text_input('Documenten zoekterm')
 source = col2.selectbox(
     'Welke bron wil je zoeken?',
-    ('Alle', 'Rekenkamer', 'Rathenau', 'CE Delft', 'Kamervragen', 'Kamerbrieven', 'Commissie debatten'))
+    ('Alle', 'Alle rapporten', 'Alle kamerstukken', 'Rekenkamer', 'Rathenau', 'CE Delft', 'Commissie debatten', 'Kamervragen', 'Kamerbrieven', 'Moties', 'Wetgevingsoverleggen'))
 limit = col3.selectbox(
     'Aantal resultaten',
     (10, 25, 50, 100, 250, 500, 1000),
