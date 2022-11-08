@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import pandas as pd
 import numpy as np
-from helpers.app_engine import search
+from helpers.app_engine import search, sources as engine_sources
 from helpers.zip import generate_zip, zip_ready
 from helpers.input import focus_first_input
 
@@ -56,8 +56,8 @@ def bar_plot(df):
 @st.experimental_memo
 def heatmap_plot(df):
     fig = plt.figure(figsize=(10,5))
-    df_heatmap = df.groupby(['month', 'year'])['uid'].count()
-    df_heatmap = df_heatmap.reset_index().pivot_table(columns='year',index='month',values='uid', fill_value=0)
+    df_heatmap = df.groupby(['month', 'year'])['id'].count()
+    df_heatmap = df_heatmap.reset_index().pivot_table(columns='year',index='month',values='id', fill_value=0)
     df_heatmap = df_heatmap.reindex(np.arange(df['year'].min(), 2023), axis=1, fill_value=0)
     df_heatmap = df_heatmap.reindex(np.arange(1,13), axis=0, fill_value=0)
 
@@ -81,12 +81,12 @@ def df_plots(df):
 
 @st.experimental_memo(show_spinner=False)
 def prep_df(df):
-    df['created_at'] = df['created_at'].apply(lambda x: x.split('T')[0])
-    df['created_at'] = pd.to_datetime(df['created_at'])
-    df['created_at_fmt'] = df['created_at'].dt.strftime('%d-%m-%Y')
+    df['date'] = df['date'].apply(lambda x: x.split('T')[0])
+    df['date'] = pd.to_datetime(df['date'])
+    df['date_fmt'] = df['date'].dt.strftime('%d-%m-%Y')
     df['doc_source'] = df['doc_source'].apply(lambda x: x.capitalize())
-    df['year'] = df['created_at'].dt.year
-    df['month'] = df['created_at'].dt.month
+    df['year'] = df['date'].dt.year
+    df['month'] = df['date'].dt.month
 
     return df
 
@@ -104,7 +104,8 @@ col1, col2, col3 = st.columns([1, 0.5, 0.5])
 query = col1.text_input('Zoekterm')
 source = col2.selectbox(
     'Welke bron wil je zoeken?',
-    ('Alle', 'Alle rapporten', 'Alle kamerstukken', 'Rekenkamer', 'Rathenau', 'CE Delft', 'Commissie debatten', 'Kamervragen', 'Kamerbrieven', 'Moties', 'Wetgevingsoverleggen'))
+    engine_sources)
+
 limit = col3.selectbox(
     'Aantal resultaten',
     (10, 25, 50, 100, 250, 500, 1000),
@@ -131,7 +132,7 @@ if query is not None and query != '':
             "all": [
                 { "extension": doc_types },
                 { 
-                    "created_at": {
+                    "date": {
                         "from": f"{start_year}-01-01T00:00:00+00:00",
                         "to": f"{end_year}-12-31T23:59:59+00:00"
                     }
@@ -139,6 +140,9 @@ if query is not None and query != '':
             ]
         }
 
+    source_ftm = {
+
+    }
     df = search(query=query, source=source, limit=limit, filters=filters)
 
     if df.shape[0] == 0:
@@ -156,13 +160,13 @@ if query is not None and query != '':
             zip_button(df, query, c)
             
             # Dataframe table
-            show_df = df[['score', 'doc_source', 'title', 'created_at_fmt', 'url']]
+            show_df = df[['score', 'doc_source', 'title', 'date_fmt', 'url']]
             show_df = show_df.rename(
                 columns={
                     'score': "Score", 
                     'title': "Titel", 
                     'doc_source': "Bron", 
-                    'created_at_fmt': "Publicatie datum", 
+                    'date_fmt': "Publicatie datum", 
                     'url': "Externe url"
                 }
             )

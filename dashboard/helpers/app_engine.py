@@ -18,36 +18,38 @@ app_search = AppSearch(
 
 @st.experimental_memo(show_spinner=False)
 def search(query, source, limit=10, filters={}):
-    engine = source.lower().replace(" ", "-")
-    if engine == 'alle':
-        engine = 'all'
-    elif engine == 'alle-rapporten':
-        engine = 'rapporten'
-    elif engine == 'alle-kamerstukken':
-        engine = 'kamerstukken'
+    engine = source_to_engine_name(source)
 
     data = app_search.search(
         engine_name=engine, 
         query=query, 
         page_size=limit,
-        filters=filters
+        filters=filters,
+        result_fields={
+            "id": { "raw": {} },
+            "title": { "raw": {} },
+            "url": { "raw": {} },
+            "doc_source": { "raw": {} },
+            "extension": { "raw": {} },
+            "date": { "raw": {} }
+        }
     )
 
     results = []
     for result in data['results']:
         results.append({
-            'uid': result['id']['raw'],
+            'id': result['id']['raw'],
             'title': result['title']['raw'],
             'url': result['url']['raw'],
             'doc_source': result['doc_source']['raw'],
             'extension': result['extension']['raw'],
-            'created_at': result['created_at']['raw'],
+            'date': result['date']['raw'],
             'score': result['_meta']['score']
         })
 
     df = pd.DataFrame(
         results, 
-        columns=['uid', 'title', 'url', 'doc_source', 'extension', 'created_at', 'score']
+        columns=['id', 'title', 'url', 'doc_source', 'extension', 'date', 'score']
     )
 
     return df
@@ -123,7 +125,7 @@ def _dataframe_from_documents(documents):
     data = []
     for document in documents:
         data.append({
-            "uid": str(uuid.uuid4()),
+            "id": str(uuid.uuid4()),
             "url": document.name,
             "body": document.read().decode("utf-8") ,
             "publish_date": '2022-10-20',
@@ -146,19 +148,19 @@ def _create_engine(name='private-unique', language='nl'):
             "body": "text",
             "url": "text",
             "last_updated": "date",
-            "created_at": "date"
+            "date": "date"
         }
     )
 
 
 def _doc_to_app_search_doc(doc):
     return {
-        "id": doc['uid'],
+        "id": doc['id'],
         "title": '',
         "body": doc['body'],
         "url": doc['url'],
         "last_updated": doc['publish_date'],
-        "created_at": doc['publish_date'],
+        "date": doc['publish_date'],
         "doc_source": 'private'
     }
 
@@ -172,4 +174,21 @@ def _add_documents_to_engine(name, docs=None):
             engine_name=name,
             documents=json.dumps(doc_chunk.apply(_doc_to_app_search_doc, axis=1).to_list())
         )
-        
+
+engines = {
+    'Alle': 'source-all',
+    'Alle rapporten': 'source-public-reports',
+    'Alle kamerstukken': 'source-kamerstukken',
+    'Rekenkamer': 'source-rekenkamer',
+    'Rathenau': 'source-rathenau',
+    'Commissie debatten': 'source-kamer-commissiedebatten',
+    'Kamervragen': 'source-kamer-kamervragen',
+    'Kamerbrieven': 'source-kamer-briefregering',
+    'Moties': 'source-kamer-motie',
+    'Wetgevingsoverleggen': 'source-kamer-wetgevingsoverleggen'
+}
+
+sources = engines.keys()
+
+def source_to_engine_name(source):
+    return engines[source]
