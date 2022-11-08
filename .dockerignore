@@ -1,0 +1,5 @@
+.github
+.git
+.streamlit/secrets.toml
+tmp
+**/__pycache__

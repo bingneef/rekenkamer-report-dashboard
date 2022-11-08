@@ -8,6 +8,7 @@ import numpy as np
 from helpers.app_engine import search, sources as engine_sources
 from helpers.zip import generate_zip, zip_ready
 from helpers.input import focus_first_input
+from helpers.config import set_page_config
 
 
 if 'extended_search' not in st.session_state:
@@ -91,7 +92,7 @@ def prep_df(df):
     return df
 
 
-st.set_page_config(
+set_page_config(
     page_title="Zoeken in openbare bronnen", 
     page_icon="🔎", 
     layout="wide"

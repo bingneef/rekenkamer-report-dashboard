@@ -6,13 +6,14 @@ import pandas as pd
 import uuid
 import streamlit as st
 import time
+import os
 import json
 from helpers.state import get_private_engine_name, set_engine_name, clear_engine_name
 
 
 app_search = AppSearch(
-    st.secrets["ENGINE_BASE_URL"],
-    http_auth=st.secrets["ENGINE_AUTH"]
+    os.getenv("ENGINE_BASE_URL"),
+    http_auth=os.getenv("ENGINE_AUTH")
 )
 
 
