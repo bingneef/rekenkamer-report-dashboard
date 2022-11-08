@@ -29,7 +29,7 @@ def file_root(query):
 
 
 def download_pdf(row):
-        write_path = f"tmp/reports/{row['uid']}.pdf"
+        write_path = f"tmp/reports/{row['uid']}.{row['extension']}"
 
         if os.path.exists(write_path) is False:
             r = requests.get(row['url'], allow_redirects=True)
@@ -39,12 +39,22 @@ def download_pdf(row):
 
 
 def generate_zip(df, query):
+    print(df)
+    # TODO: make this smarter and to re-use already downloaded files
+    # Remove tmp files
+    for folder, __, files in os.walk('tmp/reports'):
+        for file in files:
+            if not file.endswith('.gitkeep'):
+                os.unlink(os.path.join(folder, file))
+
+    # Download files
     df.apply(download_pdf, axis=1)
 
+    # Generate zip
     out_zipfile = zipfile.ZipFile(f"{file_root(query)}.zip", 'w')
     for folder, __, files in os.walk('tmp/reports'):
         for file in files:
-            if file.endswith('.pdf'):
+            if not file.endswith('.gitkeep'):
                 out_zipfile.write(
                     os.path.join(folder, file), 
                     os.path.relpath(os.path.join(folder,file), 'tmp'), 
