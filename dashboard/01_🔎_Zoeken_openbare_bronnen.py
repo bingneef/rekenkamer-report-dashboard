@@ -1,18 +1,17 @@
 import streamlit as st
-import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import pandas as pd
 import numpy as np
-from helpers.app_engine import search, sources as engine_sources
+from helpers.app_engine import search, sources as engine_sources, public_source_to_engine_name
 from helpers.zip import generate_zip, zip_ready
 from helpers.input import focus_first_input
 from helpers.config import set_page_config
 
-
 if 'extended_search' not in st.session_state:
     st.session_state.extended_search = False
+
 
 def set_extended_search():
     st.session_state.extended_search = st.session_state.extended_search == False
@@ -39,7 +38,7 @@ def bar_plot(df):
     labels = np.flip(df['doc_source'].unique())
 
     sns.set_theme(style="darkgrid")
-    fig = plt.figure(figsize=(10,5))
+    fig = plt.figure(figsize=(10, 5))
 
     ax = sns.histplot(df, x="year", hue="doc_source", bins=bins, discrete=True, multiple='dodge', legend=True)
     sns.despine()
@@ -56,16 +55,17 @@ def bar_plot(df):
 
 @st.experimental_memo
 def heatmap_plot(df):
-    fig = plt.figure(figsize=(10,5))
+    fig = plt.figure(figsize=(10, 5))
     df_heatmap = df.groupby(['month', 'year'])['id'].count()
-    df_heatmap = df_heatmap.reset_index().pivot_table(columns='year',index='month',values='id', fill_value=0)
+    df_heatmap = df_heatmap.reset_index().pivot_table(columns='year', index='month', values='id', fill_value=0)
     df_heatmap = df_heatmap.reindex(np.arange(df['year'].min(), 2023), axis=1, fill_value=0)
-    df_heatmap = df_heatmap.reindex(np.arange(1,13), axis=0, fill_value=0)
+    df_heatmap = df_heatmap.reindex(np.arange(1, 13), axis=0, fill_value=0)
 
     ax = sns.heatmap(
-        df_heatmap, 
+        df_heatmap,
         cmap="rocket_r",
-        yticklabels=['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December']
+        yticklabels=['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober',
+                     'November', 'December']
     )
     ax.set(xlabel='Jaar', ylabel='Maand')
     plt.xticks(rotation=45)
@@ -93,8 +93,8 @@ def prep_df(df):
 
 
 set_page_config(
-    page_title="Zoeken in openbare bronnen", 
-    page_icon="🔎", 
+    page_title="Zoeken in openbare bronnen",
+    page_icon="🔎",
     layout="wide"
 )
 
@@ -102,7 +102,7 @@ st.markdown("# Zoeken in openbare bronnen🔎")
 
 col1, col2, col3 = st.columns([1, 0.5, 0.5])
 
-query = col1.text_input('Zoekterm')
+query = col1.text_input('Zoekterm', placeholder="Waar wil je op zoeken?")
 source = col2.selectbox(
     'Welke bron wil je zoeken?',
     engine_sources)
@@ -131,8 +131,8 @@ if query is not None and query != '':
     if st.session_state.extended_search:
         filters = {
             "all": [
-                { "extension": doc_types },
-                { 
+                {"extension": doc_types},
+                {
                     "date": {
                         "from": f"{start_year}-01-01T00:00:00+00:00",
                         "to": f"{end_year}-12-31T23:59:59+00:00"
@@ -141,16 +141,13 @@ if query is not None and query != '':
             ]
         }
 
-    source_ftm = {
-
-    }
-    df = search(query=query, source=source, limit=limit, filters=filters)
+    df = search(query=query, engine_name=public_source_to_engine_name(source), limit=limit, filters=filters)
 
     if df.shape[0] == 0:
         st.write("Geen resultaten gevonden")
     else:
-                
-        # Prep datafram
+
+        # Prep dataframe
         df = prep_df(df)
 
         tab1, tab2 = st.tabs(["Data 📄", "Grafieken 📊"])
@@ -159,15 +156,15 @@ if query is not None and query != '':
         with tab1:
             c = st.container()
             zip_button(df, query, c)
-            
+
             # Dataframe table
             show_df = df[['score', 'doc_source', 'title', 'date_fmt', 'url']]
             show_df = show_df.rename(
                 columns={
-                    'score': "Score", 
-                    'title': "Titel", 
-                    'doc_source': "Bron", 
-                    'date_fmt': "Publicatie datum", 
+                    'score': "Score",
+                    'title': "Titel",
+                    'doc_source': "Bron",
+                    'date_fmt': "Publicatie datum",
                     'url': "Externe url"
                 }
             )
@@ -177,6 +174,5 @@ if query is not None and query != '':
         # Plot
         with tab2:
             df_plots(df)
-            
 
 focus_first_input()

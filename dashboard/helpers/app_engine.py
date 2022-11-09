@@ -1,14 +1,12 @@
-from elastic_enterprise_search import AppSearch
-import elastic_enterprise_search
-import numpy as np
-import math
+from elastic_enterprise_search import AppSearch, exceptions
 import pandas as pd
-import uuid
 import streamlit as st
-import time
 import os
-import json
-from helpers.state import get_private_engine_name, set_engine_name, clear_engine_name
+from helpers.minio import put_object, MinioError
+
+
+class AppEngineError(Exception):
+    pass
 
 
 app_search = AppSearch(
@@ -16,23 +14,37 @@ app_search = AppSearch(
     http_auth=os.getenv("ENGINE_AUTH")
 )
 
+public_sources = {
+    'Alle': 'source-all',
+    'Alle rapporten': 'source-public-reports',
+    'Alle kamerstukken': 'source-kamerstukken',
+    'Rekenkamer': 'source-rekenkamer',
+    'Rathenau': 'source-rathenau',
+    'Commissie debatten': 'source-kamer-commissiedebatten',
+    'Kamervragen': 'source-kamer-kamervragen',
+    'Kamerbrieven': 'source-kamer-briefregering',
+    'Moties': 'source-kamer-motie',
+    'Wetgevingsoverleggen': 'source-kamer-wetgevingsoverleggen'
+}
+
+sources = public_sources.keys()
+
 
 @st.experimental_memo(show_spinner=False)
-def search(query, source, limit=10, filters={}):
-    engine = source_to_engine_name(source)
+def search(query, engine_name, limit=10, filters={}):
 
     data = app_search.search(
-        engine_name=engine, 
-        query=query, 
+        engine_name=engine_name,
+        query=query,
         page_size=limit,
         filters=filters,
         result_fields={
-            "id": { "raw": {} },
-            "title": { "raw": {} },
-            "url": { "raw": {} },
-            "doc_source": { "raw": {} },
-            "extension": { "raw": {} },
-            "date": { "raw": {} }
+            "id": {"raw": {}},
+            "title": {"raw": {}},
+            "url": {"raw": {}},
+            "doc_source": {"raw": {}},
+            "extension": {"raw": {}},
+            "date": {"raw": {}}
         }
     )
 
@@ -49,7 +61,7 @@ def search(query, source, limit=10, filters={}):
         })
 
     df = pd.DataFrame(
-        results, 
+        results,
         columns=['id', 'title', 'url', 'doc_source', 'extension', 'date', 'score']
     )
 
@@ -60,59 +72,75 @@ def search(query, source, limit=10, filters={}):
 def get_engine_stats():
     api_engines = app_search.list_engines()
 
-    engines = []
+    public_engines = []
+    custom_engines = []
+    total_documents = 0
+    total_engines = 0
+
     for api_engine in api_engines['results']:
         if api_engine['type'] != 'default':
             continue
-        
-        if api_engine['name'].find('private-') == 0:
-            continue
 
-        engines.append({
-            'name': api_engine['name'],
+        total_documents += api_engine['document_count']
+        total_engines += 1
+
+        engine = {
+            'name': api_engine['name'].replace('source-', '').replace('custom-', ''),
             'language': api_engine['language'] or 'Universal',
             'document_count': api_engine['document_count'],
-        })
-
-    df_engines = pd.DataFrame.from_dict(engines)
+        }
+        if api_engine['name'].startswith('source-custom-'):
+            custom_engines.append(engine)
+        else:
+            public_engines.append(engine)
 
     return {
-        'total_engines': df_engines.shape[0],
-        'total_documents': df_engines['document_count'].sum(),
-        'df_engines': df_engines
+        'total_engines': total_engines,
+        'total_documents': total_documents,
+        'df_public_engines': pd.DataFrame.from_dict(public_engines).sort_values(by='name').reset_index(drop=True),
+        'df_custom_engines': pd.DataFrame.from_dict(custom_engines).sort_values(by='name').reset_index(drop=True)
     }
 
     return data
 
+
 def send_documents_to_external_storage(source_name, documents):
-    print(source_name)
-    print(documents[0])
+    for document in documents:
+        put_object(source_name, document)
 
 
 def handle_custom_source(source_name, documents):
     print(f"Creating custom source for {source_name} with {len(documents)} document(s)")
 
-    with st.spinner('Bezig met verwerken..'):
-        send_documents_to_external_storage(source_name, documents)
+    try:
+        with st.spinner('Bezig met verwerken..'):
+            send_documents_to_external_storage(source_name, documents)
 
-    # FIXME: Start intervalling
-    st.success('Klaar (niet echt)!', icon="✅")
+        return True
+
+    except MinioError:
+        return False
 
 
-engines = {
-    'Alle': 'source-all',
-    'Alle rapporten': 'source-public-reports',
-    'Alle kamerstukken': 'source-kamerstukken',
-    'Rekenkamer': 'source-rekenkamer',
-    'Rathenau': 'source-rathenau',
-    'Commissie debatten': 'source-kamer-commissiedebatten',
-    'Kamervragen': 'source-kamer-kamervragen',
-    'Kamerbrieven': 'source-kamer-briefregering',
-    'Moties': 'source-kamer-motie',
-    'Wetgevingsoverleggen': 'source-kamer-wetgevingsoverleggen'
-}
+def delete_custom_source_engine(custom_source):
+    engine_name = f"source-custom-{custom_source}"
+    try:
+        app_search.delete_engine(engine_name=engine_name)
+    except exceptions.NotFoundError:
+        pass
 
-sources = engines.keys()
 
-def source_to_engine_name(source):
-    return engines[source]
+@st.experimental_memo(show_spinner=False, ttl=1*60)
+def custom_sources():
+    api_engines = app_search.list_engines()
+    custom_engines = []
+
+    for api_engine in api_engines['results']:
+        if api_engine['name'].startswith('source-custom-'):
+            custom_engines.append(api_engine['name'])
+
+    return custom_engines
+
+
+def public_source_to_engine_name(public_source):
+    return public_sources[public_source]
