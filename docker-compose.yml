@@ -10,7 +10,11 @@ services:
       - "80:8501"
     environment:
       ENV: "PRODUCTION"
-      ENGINE_BASE_URL: "http://146.190.226.10:3002"
-      ENGINE_AUTH: "private-v8qi3nccs2yqfahzfwgy46fg"
       STREAMLIT_BROWSER_GATHER_USAGE_STATS: false
       STREAMLIT_CLIENT_SHOW_ERROR_DETAILS: false
+      ENGINE_BASE_URL: "_"
+      ENGINE_AUTH: "_"
+      MINIO_HOST: "localhost:9000"
+      MINIO_ACCESS_KEY: "_"
+      MINIO_SECRET_KEY: "_"
+      MINIO_SECURE: 0

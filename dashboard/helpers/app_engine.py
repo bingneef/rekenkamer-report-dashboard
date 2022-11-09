@@ -118,7 +118,8 @@ def handle_custom_source(source_name, documents):
 
         return True
 
-    except MinioError:
+    except MinioError as error:
+        print(error)
         return False
 
 
