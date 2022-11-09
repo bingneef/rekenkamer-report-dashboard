@@ -1,0 +1,16 @@
+version: '3.1'
+
+services:
+  dashboard:
+    build:
+      content: '.''
+    #    image: bingneef/rekenkamer-report-dashboard:0.0.1
+    restart: always
+    ports:
+      - "80:8501"
+    environment:
+      ENV: "PRODUCTION"
+      ENGINE_BASE_URL: "http://146.190.226.10:3002"
+      ENGINE_AUTH: "private-v8qi3nccs2yqfahzfwgy46fg"
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: false
+      STREAMLIT_CLIENT_SHOW_ERROR_DETAILS: false
