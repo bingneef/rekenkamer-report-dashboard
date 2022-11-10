@@ -30,7 +30,7 @@ public_sources = {
 sources = public_sources.keys()
 
 
-@st.experimental_memo(show_spinner=False)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def search(query, engine_name, limit=10, filters={}):
 
     data = app_search.search(
@@ -68,7 +68,7 @@ def search(query, engine_name, limit=10, filters={}):
     return df
 
 
-@st.experimental_memo(show_spinner=False)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def get_engine_stats():
     api_engines = app_search.list_engines()
 
@@ -131,7 +131,7 @@ def delete_custom_source_engine(custom_source):
         pass
 
 
-@st.experimental_memo(show_spinner=False, ttl=1*60)
+@st.experimental_memo(show_spinner=False, ttl=60)
 def custom_sources():
     api_engines = app_search.list_engines()
     custom_engines = []
