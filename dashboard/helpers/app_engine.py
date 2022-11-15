@@ -23,7 +23,7 @@ public_sources = {
     'Commissie debatten': 'source-kamer-commissiedebatten',
     'Kamervragen': 'source-kamer-kamervragen',
     'Kamerbrieven': 'source-kamer-briefregering',
-    'Moties': 'source-kamer-motie',
+    'Moties': 'source-kamer-moties',
     'Wetgevingsoverleggen': 'source-kamer-wetgevingsoverleggen'
 }
 

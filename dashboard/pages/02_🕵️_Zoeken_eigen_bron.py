@@ -2,9 +2,10 @@ import streamlit as st
 import pandas as pd
 from helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, AppEngineError
 from helpers.minio import delete_custom_source_bucket, MinioError
+from helpers.config import set_page_config
 
 
-st.set_page_config(
+set_page_config(
     page_title="Zoeken in eigen bron", 
     page_icon="🕵️", 
     layout="wide"
