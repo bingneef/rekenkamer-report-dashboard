@@ -16,6 +16,14 @@ class MinioError(Exception):
     pass
 
 
+def generate_custom_source_url(file_name):
+    protocol = 'http'
+    if os.getenv('MINIO_SECURE', 0) == 1:
+        protocol = 'https'
+
+    return f"{protocol}://{os.getenv('MINIO_HOST')}/{file_name}"
+
+
 def put_object(source_name, file_upload):
     try:
         client.put_object(

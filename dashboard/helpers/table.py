@@ -1,6 +1,6 @@
 import streamlit as st
 import webbrowser
-import os
+from helpers.minio import generate_custom_source_url
 
 
 col_ratio = [1, 10, 2, 2, 2]
@@ -70,7 +70,7 @@ def render_row(row):
     # Actions
     url_fmt = row['external_url']
     if row['doc_source'] == 'custom':
-        url_fmt = f"{os.getenv('MINIO_HOST')}/{url_fmt}"
+        url_fmt = generate_custom_source_url(row['external_url'])
 
     row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>|"
 
