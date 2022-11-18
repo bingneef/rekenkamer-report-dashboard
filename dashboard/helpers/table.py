@@ -1,5 +1,6 @@
 import streamlit as st
 import webbrowser
+import os
 
 
 col_ratio = [1, 10, 2, 2, 2]
@@ -67,7 +68,11 @@ def render_row(row):
     row_str += f"<span class='tag {size_class}'>{size_fmt}</span>|"
 
     # Actions
-    row_str += f"<a href='{row['external_url']}' target='_blank'>Openen</a>|"
+    url_fmt = row['external_url']
+    if row['doc_source'] == 'custom':
+        url_fmt = f"{os.getenv('MINIO_HOST')}/{url_fmt}"
+
+    row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>|"
 
     row_str += "\n"
     return row_str
