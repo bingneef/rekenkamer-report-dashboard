@@ -1,6 +1,10 @@
 import streamlit as st
 import webbrowser
 from helpers.minio import generate_custom_source_url
+<<<<<<< HEAD
+=======
+
+>>>>>>> 513ed8c (Feat: add minio generate custom url)
 
 col_ratio = [1, 10, 2, 2, 2]
 
