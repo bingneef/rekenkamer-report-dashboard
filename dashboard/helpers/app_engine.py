@@ -20,11 +20,11 @@ public_sources = {
     'Alle kamerstukken': 'source-kamerstukken',
     'Rekenkamer': 'source-rekenkamer',
     'Rathenau': 'source-rathenau',
-    'Commissie debatten': 'source-kamer-commissiedebatten',
-    'Kamervragen': 'source-kamer-kamervragen',
-    'Kamerbrieven': 'source-kamer-briefregering',
-    'Moties': 'source-kamer-moties',
-    'Wetgevingsoverleggen': 'source-kamer-wetgevingsoverleggen'
+    'Commissiedebat': 'source-kamer-commissiedebatten',
+    'Kamervraag': 'source-kamer-kamervragen',
+    'Kamerbrief': 'source-kamer-briefregering',
+    'Motie': 'source-kamer-moties',
+    'Wetgevingsoverleg': 'source-kamer-wetgevingsoverleggen'
 }
 
 sources = public_sources.keys()
@@ -32,17 +32,38 @@ sources = public_sources.keys()
 
 @st.experimental_memo(show_spinner=False, ttl=60)
 def search(query, engine_name, limit=10, filters={}):
-
     data = app_search.search(
         engine_name=engine_name,
         query=query,
         page_size=limit,
         filters=filters,
+        search_fields={
+            "title": {
+                "weight": 10
+            },
+            "body": {
+                "weight": 1
+            },
+            "url": {
+                "weight": 2
+            }
+        },
+        boosts={
+            "relevancy": [
+                {
+                    "type": "functional",
+                    "function": "linear",
+                    "operation": "multiply",
+                    "factor": 0.5
+                }
+            ]
+        },
         result_fields={
             "id": {"raw": {}},
             "title": {"raw": {}},
             "url": {"raw": {}},
             "doc_source": {"raw": {}},
+            "doc_size": {"raw": {}},
             "extension": {"raw": {}},
             "date": {"raw": {}}
         }
@@ -53,19 +74,15 @@ def search(query, engine_name, limit=10, filters={}):
         results.append({
             'id': result['id']['raw'],
             'title': result['title']['raw'],
-            'url': result['url']['raw'],
+            'external_url': result['url']['raw'],
             'doc_source': result['doc_source']['raw'],
+            'doc_size': result['doc_size']['raw'],
             'extension': result['extension']['raw'],
             'date': result['date']['raw'],
             'score': result['_meta']['score']
         })
 
-    df = pd.DataFrame(
-        results,
-        columns=['id', 'title', 'url', 'doc_source', 'extension', 'date', 'score']
-    )
-
-    return df
+    return results
 
 
 @st.experimental_memo(show_spinner=False, ttl=60)
