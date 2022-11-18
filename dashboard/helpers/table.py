@@ -68,6 +68,7 @@ def render_row(row):
     row_str += f"<span class='tag {size_class}'>{size_fmt}</span>|"
 
     # Actions
+    # FIXME: use streamlit-bridge to generate URLs on the fly
     url_fmt = row['external_url']
     if row['doc_source'] == 'custom':
         url_fmt = generate_custom_source_url(row['external_url'])
