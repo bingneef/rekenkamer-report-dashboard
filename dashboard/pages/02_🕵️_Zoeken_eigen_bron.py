@@ -1,76 +1,115 @@
 import streamlit as st
-import io
-import pandas as pd
-from helpers.app_engine import search, get_private_source_details, handle_private_source, remove_private_source
-from helpers.state import get_private_engine_name
-from helpers.input import focus_first_input
+from helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, AppEngineError
+from helpers.minio import delete_custom_source_bucket, MinioError
+from helpers.config import set_page_config
+from helpers.table import render_results_table
 
+if 'add_custom_source' not in st.session_state:
+    st.session_state['add_custom_source'] = False
 
-st.set_page_config(
-    page_title="Zoeken in eigen bron", 
-    page_icon="🕵️", 
+set_page_config(
+    page_title="Zoeken in eigen bron",
+    page_icon="🕵️",
     layout="wide"
 )
 
-
 st.markdown("# Zoeken in eigen bron 🕵️")
 
-if get_private_engine_name() is not None:
-    st.button(
-        "Private bron verwijderen", 
-        on_click=remove_private_source
-    )
-    col1, col2 = st.columns([1, 0.5])
 
-    query = col1.text_input('Documenten zoekterm')
-    limit = col2.selectbox(
+def render_form_controls():
+    col1, col2, col3 = st.columns([1, 0.5, 0.5])
+    engine_sources = list(
+        map(
+            lambda x: x.replace('source-custom-', ''),
+            custom_sources()
+        )
+    )
+
+    query = col1.text_input('Zoekterm', placeholder="Waar wil je op zoeken?")
+    source = col2.selectbox(
+        'Welke bron wil je zoeken?',
+        engine_sources)
+
+    limit = col3.selectbox(
         'Aantal resultaten',
         (10, 25, 50, 100, 250, 500, 1000),
-        index=3)
-    
-    if query is None or query == '':
-        engine_details = get_private_source_details()
+        index=4)
 
-        s_col1, s_col2, _ = st.columns([0.5, 0.5, 1])
-        s_col1.metric("Aantal documenten", engine_details['document_count'])
-        s_col2.metric("Taal", engine_details['language'].upper())
-    
-    if query is not None and query != '':
-        df = search(query=query, source=get_private_engine_name(), limit=limit)
+    return query, source, limit
 
-        if df.shape[0] == 0:
-            st.write("Geen resultaten gevonden")
-        else:
-                    
-            # Prep datafram
-            df['created_at'] = df['created_at'].apply(lambda x: x.split('T')[0])
-            df['created_at'] = pd.to_datetime(df['created_at'])
-            df['created_at_fmt'] = df['created_at'].dt.strftime('%d-%m-%Y')
 
-            # Dataframe table
-            show_df = df[['score', 'url', 'created_at_fmt']]
-            show_df = show_df.rename(
-                columns={
-                    'score': "Score", 
-                    'url': "Bestandsnaam",
-                    'created_at_fmt': "Creatie datum"
-                }
-            )
+def main():
+    tab1, tab2, tab3 = st.tabs(["Bron doorzoeken", "Bron toevoegen", "Bron verwijderen"])
 
-            st.dataframe(show_df, use_container_width=True)
+    with tab1:
+        query, source, limit = render_form_controls()
 
-    focus_first_input()
-else:
-    uploaded_files = st.file_uploader(
-        'Zoek in eigen bestanden', 
-        type='txt', 
-        accept_multiple_files=True, 
-        disabled=False
-    )
+        if query is not None and query != '':
+            results = search(query=query, engine_name=f"source-custom-{source}", limit=limit)
 
-    if len(uploaded_files) > 0:
-        st.button(
-            "Documenten verwerken", 
-            on_click=handle_private_source, 
-            kwargs={'documents': uploaded_files}
+            if len(results) == 0:
+                st.write("Geen resultaten gevonden")
+            else:
+                render_results_table(results)
+
+    with tab2:
+        custom_source_name = st.text_input(
+            "Naam",
+            "",
+            placeholder="Wat is de naam van de bron?",
+            help="De naam mag alleen letters, nummers en koppeltekens (-) bevatten "
+                 "en mag niet met een koppelteken beginnen of eindigen."
         )
+
+        uploaded_files = st.file_uploader(
+            'Zoek in eigen bestanden',
+            accept_multiple_files=True,
+            disabled=False
+        )
+
+        if len(uploaded_files) > 0:
+            def handle_submit(documents):
+                custom_source_name_fmt = custom_source_name.lower()
+                allowed_chars = set("0123456789abcdefghijklmnopqrstuvwxyz-")
+                if not set(custom_source_name_fmt).issubset(allowed_chars) \
+                        or custom_source_name_fmt[-1] == '-' \
+                        or custom_source_name_fmt[0] == '-':
+                    st.error('De naam mag alleen letters, nummers en koppeltekens (-) bevatten '
+                             'en mag niet met een koppelteken beginnen of eindigen.', icon="🚨")
+                    return
+
+                success = handle_custom_source(custom_source_name_fmt, documents)
+                if success:
+                    st.success('De documenten worden verwerkt. Dit kan even duren..', icon="✅")
+                else:
+                    st.error('Er is iets foutgegaan..', icon="🚨")
+
+            st.button(
+                "Documenten verwerken",
+                on_click=handle_submit,
+                kwargs={'documents': uploaded_files}
+            )
+    with tab3:
+        def handle_delete(custom_source_to_remove):
+            try:
+                delete_custom_source_engine(custom_source_to_remove)
+                delete_custom_source_bucket(custom_source_to_remove)
+
+                st.success(f"Bron {custom_source_to_remove} is verwijderd of bestond niet meer", icon="✅")
+            except (AppEngineError, MinioError) as error:
+                st.error('Er is iets foutgegaan..', icon="🚨")
+
+        custom_source = st.text_input(
+            'Welke bron wil je verwijderen?',
+            placeholder="naam-van-bron",
+            help="Zorg dat je niet de verkeerde bron verwijdert")
+
+        st.button(
+            "Bron verwijderen",
+            on_click=handle_delete,
+            kwargs={'custom_source_to_remove': custom_source}
+        )
+
+
+if __name__ == '__main__':
+    main()
