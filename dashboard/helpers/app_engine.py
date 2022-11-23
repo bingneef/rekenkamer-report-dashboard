@@ -65,18 +65,25 @@ def search(query, engine_name, limit=10, filters={}):
             "doc_source": {"raw": {}},
             "doc_size": {"raw": {}},
             "extension": {"raw": {}},
-            "date": {"raw": {}}
+            "date": {"raw": {}},
+            "meta_detail_url": {"raw": {}}
         }
     )
 
     results = []
     for result in data['results']:
+        try:
+            detail_url = result['meta_detail_url']['raw']
+        except KeyError:
+            detail_url = None
+
         results.append({
             'id': result['id']['raw'],
             'title': result['title']['raw'],
             'external_url': result['url']['raw'],
             'doc_source': result['doc_source']['raw'],
             'doc_size': result['doc_size']['raw'],
+            'detail_url': detail_url,
             'extension': result['extension']['raw'],
             'date': result['date']['raw'],
             'score': result['_meta']['score']

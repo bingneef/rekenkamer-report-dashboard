@@ -2,7 +2,6 @@ import streamlit as st
 import webbrowser
 from helpers.minio import generate_custom_source_url
 
-
 col_ratio = [1, 10, 2, 2, 2]
 
 
@@ -10,7 +9,7 @@ def open_document_url(url):
     webbrowser.open(url)
 
 
-@st.experimental_memo(ttl=60*60*24)
+@st.experimental_memo(ttl=60 * 60 * 24)
 def format_source(source):
     mapping = {
         'kamer_moties': ('Motie', 'kamer-motie'),
@@ -41,7 +40,7 @@ def format_size(size):
     return 'Zeer lang', 'very-high'
 
 
-@st.experimental_memo(ttl=60*60*24)
+@st.experimental_memo(ttl=60 * 60 * 24)
 def format_date(date):
     return date[0:10]
 
@@ -68,12 +67,18 @@ def render_row(row):
     row_str += f"<span class='tag {size_class}'>{size_fmt}</span>|"
 
     # Actions
-    # FIXME: use streamlit-bridge to generate URLs on the fly
+    # Document url
+    # FIXME: investigate streamlit-bridge to generate URLs on the fly
     url_fmt = row['external_url']
     if row['doc_source'] == 'custom':
         url_fmt = generate_custom_source_url(row['external_url'])
 
-    row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>|"
+    row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>"
+
+    # Document detail url
+    if row['detail_url'] is not None:
+        row_str += f" <a href='{row['detail_url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
+    row_str += "|"
 
     row_str += "\n"
     return row_str
@@ -132,6 +137,14 @@ def render_results_table(results):
             .tag.very-high {
                 color:#333;
                 background-color: #FF4E1199;
+            }
+            
+            a.details-link {
+                background-color: rgb(0,104,201);
+                color: white;
+                border-radius: 4px;
+                padding: 0 4px;
+                text-decoration: none;
             }
         </style>
     """, unsafe_allow_html=True)

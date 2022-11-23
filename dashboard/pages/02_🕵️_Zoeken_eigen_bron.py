@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 from helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, AppEngineError
 from helpers.minio import delete_custom_source_bucket, MinioError
 from helpers.config import set_page_config
@@ -81,7 +80,7 @@ def main():
 
                 success = handle_custom_source(custom_source_name_fmt, documents)
                 if success:
-                    st.success('De documenten worden verwerkt. Dit kan even duren.', icon="✅")
+                    st.success('De documenten worden verwerkt. Dit kan even duren..', icon="✅")
                 else:
                     st.error('Er is iets foutgegaan..', icon="🚨")
 
