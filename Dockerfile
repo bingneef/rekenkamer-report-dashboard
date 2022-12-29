@@ -12,9 +12,9 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . .
-
+COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
+COPY . .
 
-ENTRYPOINT ["streamlit", "run", "dashboard/01_🔎_Zoeken_openbare_bronnen.py", "--server.port=8501", "--server.address=0.0.0.0"]
+ENTRYPOINT ["streamlit", "run", "dashboard/01_🔎_Zoeken_algemene_bronnen.py", "--server.port=8501", "--server.address=0.0.0.0"]

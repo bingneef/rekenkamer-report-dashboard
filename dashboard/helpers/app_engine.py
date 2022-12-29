@@ -59,6 +59,10 @@ def format_source(sub_source):
     if sub_source in list_sources().keys():
         return list_sources()[sub_source]
 
+    # Allow mapping for custom sources
+    if f"source-custom-{sub_source}" in list_sources().keys():
+        return list_sources()[f"source-custom-{sub_source}"]
+
     return sub_source
 
 

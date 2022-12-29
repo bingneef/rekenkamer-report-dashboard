@@ -6,8 +6,6 @@ from helpers.minio import generate_custom_source_url
 
 >>>>>>> 513ed8c (Feat: add minio generate custom url)
 
-col_ratio = [1, 10, 2, 2, 2]
-
 
 def open_document_url(url):
     webbrowser.open(url)
