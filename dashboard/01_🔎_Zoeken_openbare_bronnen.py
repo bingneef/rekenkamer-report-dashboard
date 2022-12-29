@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from helpers.app_engine import search, sources as engine_sources, public_source_to_engine_name
+from helpers.app_engine import search, public_sources, deflate_group_sources
 from helpers.input import focus_first_input
 from helpers.config import set_page_config
 from helpers.table import render_results_table
@@ -16,25 +16,36 @@ def set_extended_search():
 
 
 def render_plots(df):
+    st.write('# Impact score')
+    col1, col2 = st.columns(2)
+    col1.write(bar_plot(df, kind='sum'))
+    col2.write(heatmap_plot(df, kind='sum'))
+
+    st.write('# Aantal documenten')
     col1, col2 = st.columns(2)
     col1.write(bar_plot(df))
     col2.write(heatmap_plot(df))
 
 
+def format_source(source):
+    return public_sources[source]
+
+
 def render_form_controls():
     col1, col2, col3 = st.columns([1, 0.5, 0.5])
 
-    query = col1.text_input('Zoekterm', placeholder="Waar wil je op zoeken?")
-    source = col2.selectbox(
-        'Welke bron wil je zoeken?',
-        engine_sources)
+    query = col1.text_input('Zoekterm', placeholder="Wat zou je?")
+    sources = col2.multiselect(
+        'Welke bronnen wil je doorzoeken?',
+        public_sources.keys(),
+        format_func=format_source)
 
     limit = col3.selectbox(
         'Aantal resultaten',
         (10, 25, 50, 100, 250, 500, 1000),
         index=4)
 
-    return query, source, limit
+    return query, sources, limit
 
 
 def render_extended_form_controls():
@@ -45,8 +56,8 @@ def render_extended_form_controls():
         ad_col1, ad_col2 = st.columns([0.5, 1], gap='large')
         doc_types = ad_col1.multiselect(
             'Soort document',
-            ('pdf', 'docx', 'txt'),
-            default=['pdf', 'docx', 'txt'])
+            ('pdf', 'docx', 'doc', 'txt'),
+            default=['pdf', 'docx', 'doc', 'txt'])
 
         start_year, end_year = ad_col2.select_slider(
             'Publicatie jaar',
@@ -58,17 +69,15 @@ def render_extended_form_controls():
 
 
 def extended_search_payload(doc_types, start_year, end_year):
-    return {
-        "all": [
-            {"extension": doc_types},
-            {
-                "date": {
-                    "from": f"{start_year}-01-01T00:00:00+00:00",
-                    "to": f"{end_year}-12-31T23:59:59+00:00"
-                }
+    return [
+        { "extension": doc_types },
+        {
+            "date": {
+                "from": f"{start_year}-01-01T00:00:00+00:00",
+                "to": f"{end_year}-12-31T23:59:59+00:00"
             }
-        ]
-    }
+        }
+    ]
 
 
 def main():
@@ -80,20 +89,24 @@ def main():
 
     st.markdown("# Zoeken in openbare bronnen🔎")
 
-    query, source, limit = render_form_controls()
+    query, sources, limit = render_form_controls()
     doc_types, start_year, end_year = render_extended_form_controls()
 
     if query is not None and query != '':
-        filters = {}
-        if st.session_state.extended_search:
-            filters = extended_search_payload(doc_types, start_year, end_year)
+        filters = []
+        if len(sources) > 0:
+            filters.append({'doc_sub_source': deflate_group_sources(sources)})
 
-        results = search(query=query, engine_name=public_source_to_engine_name(source), limit=limit, filters=filters)
+        if st.session_state.extended_search:
+            filters.extend(extended_search_payload(doc_types, start_year, end_year))
+
+
+        results = search(query=query, limit=limit, filters={'all': filters})
 
         if len(results) == 0:
             st.write("Geen resultaten gevonden")
         else:
-            tab1, tab2 = st.tabs(["Data 📄", "Grafieken 📊"])
+            tab1, tab2 = st.tabs(["Documenten 📄", "Grafieken 📊"])
 
             # Data tab
             with tab1:
@@ -103,7 +116,7 @@ def main():
             with tab2:
                 df = pd.DataFrame(
                     results,
-                    columns=['id', 'title', 'url', 'doc_source', 'extension', 'date', 'score']
+                    columns=['id', 'title', 'url', 'doc_sub_source', 'extension', 'date', 'score']
                 )
                 df = prep_df_date(df)
                 render_plots(df)

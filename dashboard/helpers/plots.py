@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.ticker import MaxNLocator
+import datetime
 
 
 @st.experimental_memo
@@ -15,33 +15,59 @@ def prep_df_date(df):
 
     return df
 
+
 @st.experimental_memo
-def bar_plot(df):
-    bins = (df['year'].max() - df['year'].min()) + 1
-    labels = np.flip(df['doc_source'].unique())
+def bar_plot(df, kind='count'):
+    labels = np.flip(df['doc_sub_source'].unique())
 
     sns.set_theme(style="darkgrid")
     fig = plt.figure(figsize=(10, 5))
 
-    ax = sns.histplot(df, x="year", hue="doc_source", bins=bins, discrete=True, multiple='dodge', legend=True)
-    sns.despine()
+    df_barplot = df.groupby(['doc_sub_source', 'year'])['score']
 
-    ax.set(xlabel='Jaar', ylabel='Aantal rapporten')
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.legend(title='Bron', loc='upper left', labels=labels)
-    ax.set_xticks(range(df['year'].min(), df['year'].max() + 1))
+    if kind == 'sum':
+        df_barplot = df_barplot.sum('score')
+    else:
+        df_barplot = df_barplot.count()
+
+    df_barplot = df_barplot.reset_index()
+
+    # This is required for the legend
+    df_barplot['Bron'] = df_barplot['doc_sub_source']
+
+    ax = sns.barplot(df_barplot, x='year', y='score', hue='Bron')
+
+    if kind == 'sum':
+        ylabel = 'Impact score'
+    else:
+        ylabel = 'Aantal documenten'
+
+    ax.set(xlabel='Jaar', ylabel=ylabel)
+    # ax.legend(loc='upper left')
     plt.xticks(rotation=45)
-    plt.title("Aantal rapporten per jaar per bron")
+
+    if kind == 'sum':
+        plt.title("Impact score per jaar per bron")
+    else:
+        plt.title("Aantal documenten per jaar per bron")
 
     return fig
 
 
 @st.experimental_memo
-def heatmap_plot(df):
+def heatmap_plot(df, kind='count'):
     fig = plt.figure(figsize=(10, 5))
-    df_heatmap = df.groupby(['month', 'year'])['id'].count()
-    df_heatmap = df_heatmap.reset_index().pivot_table(columns='year', index='month', values='id', fill_value=0)
-    df_heatmap = df_heatmap.reindex(np.arange(df['year'].min(), 2023), axis=1, fill_value=0)
+    df_heatmap = df.groupby(['month', 'year'])['score']
+
+    if kind == 'sum':
+        df_heatmap = df_heatmap.sum()
+    else:
+        df_heatmap = df_heatmap.count()
+
+    df_heatmap = df_heatmap.reset_index().pivot_table(columns='year', index='month', values='score', fill_value=0)
+
+    year_limit = datetime.date.today().year + 1
+    df_heatmap = df_heatmap.reindex(np.arange(df['year'].min(), year_limit), axis=1, fill_value=0)
     df_heatmap = df_heatmap.reindex(np.arange(1, 13), axis=0, fill_value=0)
 
     ax = sns.heatmap(
@@ -52,6 +78,10 @@ def heatmap_plot(df):
     )
     ax.set(xlabel='Jaar', ylabel='Maand')
     plt.xticks(rotation=45)
-    plt.title("Aantal rapporten per maand en jaar")
+
+    if kind == 'sum':
+        plt.title("Impact score per maand en jaar")
+    else:
+        plt.title("Aantal documenten per maand en jaar")
 
     return fig

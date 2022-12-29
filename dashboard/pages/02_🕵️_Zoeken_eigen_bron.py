@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 from helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, AppEngineError
 from helpers.minio import delete_custom_source_bucket, MinioError
 from helpers.config import set_page_config
@@ -6,14 +7,6 @@ from helpers.table import render_results_table
 
 if 'add_custom_source' not in st.session_state:
     st.session_state['add_custom_source'] = False
-
-set_page_config(
-    page_title="Zoeken in eigen bron",
-    page_icon="🕵️",
-    layout="wide"
-)
-
-st.markdown("# Zoeken in eigen bron 🕵️")
 
 
 def render_form_controls():
@@ -39,6 +32,18 @@ def render_form_controls():
 
 
 def main():
+    set_page_config(
+        page_title="Zoeken in eigen bron",
+        page_icon="🕵️",
+        layout="wide"
+    )
+
+    st.markdown("# Zoeken in eigen bron 🕵️")
+
+    if os.getenv("ENABLE_CUSTOM_SOURCES", False) is False:
+        st.error('Deze mogelijkheid is voor deze applicatie uitgezet', icon="❌")
+        return
+
     tab1, tab2, tab3 = st.tabs(["Bron doorzoeken", "Bron toevoegen", "Bron verwijderen"])
 
     with tab1:
