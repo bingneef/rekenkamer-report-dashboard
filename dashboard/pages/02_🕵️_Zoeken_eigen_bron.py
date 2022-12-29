@@ -40,7 +40,7 @@ def main():
 
     st.markdown("# Zoeken in eigen bron 🕵️")
 
-    if os.getenv("ENABLE_CUSTOM_SOURCES", False) is False:
+    if os.getenv("ENABLE_CUSTOM_SOURCE_PAGE", False) is False:
         st.error('Deze mogelijkheid is voor deze applicatie uitgezet', icon="❌")
         return
 

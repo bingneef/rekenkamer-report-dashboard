@@ -1,5 +1,4 @@
 from elastic_enterprise_search import AppSearch, exceptions
-import pandas as pd
 import streamlit as st
 import os
 from helpers.minio import put_object, MinioError
@@ -28,7 +27,7 @@ ALL_KAMERSTUKKEN = [
     'Verslag van een schriftelijk overleg'
 ]
 
-public_sources = {
+default_sources = {
     'all_reports': 'Alle rapporten',
     'rekenkamer': 'Algemene Rekenkamer',
     'rathenau': 'Rathenau',
@@ -42,19 +41,38 @@ public_sources = {
 }
 
 
-def format_sub_source(sub_source):
-    return public_sources[sub_source]
+@st.experimental_memo
+def list_sources():
+    env_sources = os.getenv("CUSTOM_SOURCES_MAIN_SEARCH", '')
+    if env_sources == '':
+        return default_sources
+
+    sources = {}
+    for env_source in env_sources.split(','):
+        key, name = env_source.split(':')
+        sources[key] = name
+
+    return sources
+
+
+def format_source(sub_source):
+    if sub_source in list_sources().keys():
+        return list_sources()[sub_source]
+
+    return sub_source
 
 
 def deflate_group_sources(grouped_sources):
     sources = []
-    for group_source in grouped_sources:
-        if group_source == 'all_kamerstukken':
-            sources.extend(ALL_KAMERSTUKKEN)
-        elif group_source == 'all_reports':
+    for grouped_source in grouped_sources:
+        if grouped_source == 'all':
+            sources.extend(ALL_REPORTS + ALL_KAMERSTUKKEN)
+        elif grouped_source == 'all_reports':
             sources.extend(ALL_REPORTS)
+        elif grouped_source == 'all_kamerstukken':
+            sources.extend(ALL_KAMERSTUKKEN)
         else:
-            sources.append(group_source)
+            sources.append(grouped_source)
 
     return sources
 
@@ -112,7 +130,7 @@ def search(query, engine_name='source-main', limit=10, filters={}):
             'title': result['title']['raw'],
             'external_url': result['url']['raw'],
             'doc_source': result['doc_source']['raw'],
-            'doc_sub_source': format_sub_source(result['doc_sub_source']['raw']),
+            'doc_sub_source': format_source(result['doc_sub_source']['raw']),
             'doc_size': result['doc_size']['raw'],
             'detail_url': detail_url,
             'extension': result['extension']['raw'],
@@ -170,7 +188,3 @@ def custom_sources():
             custom_engines.append(api_engine['name'])
 
     return custom_engines
-
-
-def public_source_to_engine_name(public_source):
-    return public_sources[public_source]

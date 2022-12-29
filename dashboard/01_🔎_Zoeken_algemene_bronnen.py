@@ -1,7 +1,8 @@
 import streamlit as st
+import os
 import pandas as pd
 import numpy as np
-from helpers.app_engine import search, public_sources, deflate_group_sources
+from helpers.app_engine import search, list_sources, format_source, deflate_group_sources
 from helpers.input import focus_first_input
 from helpers.config import set_page_config
 from helpers.table import render_results_table
@@ -9,6 +10,11 @@ from helpers.plots import prep_df_date, bar_plot, heatmap_plot
 
 if 'extended_search' not in st.session_state:
     st.session_state.extended_search = False
+
+if os.getenv("CUSTOM_SOURCES_MAIN_SEARCH", '') == '':
+    SEARCH_TYPE = 'sources'
+else:
+    SEARCH_TYPE = 'engines'
 
 
 def set_extended_search():
@@ -27,17 +33,18 @@ def render_plots(df):
     col2.write(heatmap_plot(df))
 
 
-def format_source(source):
-    return public_sources[source]
-
-
 def render_form_controls():
     col1, col2, col3 = st.columns([1, 0.5, 0.5])
 
-    query = col1.text_input('Zoekterm', placeholder="Wat zou je?")
-    sources = col2.multiselect(
-        'Welke bronnen wil je doorzoeken?',
-        public_sources.keys(),
+    query = col1.text_input('Zoekterm', placeholder="Wat zoek je?")
+    if SEARCH_TYPE == 'engines':
+        input_type = col2.selectbox
+    else:
+        input_type = col2.multiselect
+
+    sources = input_type(
+        'Welke bron(nen) wil je doorzoeken?',
+        list_sources().keys(),
         format_func=format_source)
 
     limit = col3.selectbox(
@@ -70,7 +77,7 @@ def render_extended_form_controls():
 
 def extended_search_payload(doc_types, start_year, end_year):
     return [
-        { "extension": doc_types },
+        {"extension": doc_types},
         {
             "date": {
                 "from": f"{start_year}-01-01T00:00:00+00:00",
@@ -82,12 +89,12 @@ def extended_search_payload(doc_types, start_year, end_year):
 
 def main():
     set_page_config(
-        page_title="Zoeken in openbare bronnen",
+        page_title="Zoeken in algemene bronnen",
         page_icon="🔎",
         layout="wide"
     )
 
-    st.markdown("# Zoeken in openbare bronnen🔎")
+    st.markdown("# Zoeken in algemene bronnen🔎")
 
     query, sources, limit = render_form_controls()
     doc_types, start_year, end_year = render_extended_form_controls()
@@ -100,8 +107,11 @@ def main():
         if st.session_state.extended_search:
             filters.extend(extended_search_payload(doc_types, start_year, end_year))
 
-
-        results = search(query=query, limit=limit, filters={'all': filters})
+        if SEARCH_TYPE == 'engines':
+            # If custom sources are specified, we search the engine
+            results = search(query=query, limit=limit, engine_name=sources)
+        else:
+            results = search(query=query, limit=limit, filters={'all': filters})
 
         if len(results) == 0:
             st.write("Geen resultaten gevonden")
