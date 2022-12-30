@@ -9,5 +9,5 @@ flake8 dashboard
 ## Testing
 
 ```shell
-pytest
+pytest --cov
 ```
