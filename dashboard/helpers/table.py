@@ -1,5 +1,6 @@
-import streamlit as st
 import webbrowser
+
+import streamlit as st
 from helpers.minio import generate_custom_source_url
 <<<<<<< HEAD
 =======
@@ -68,15 +69,14 @@ def render_row(row):
     size_fmt, size_class = format_size(row['doc_size'])
     row_str += f"<span class='tag {size_class}'>{size_fmt}</span>|"
 
-    # Actions
-    ## Document url
+    # Actions:Document url
     url_fmt = row['external_url']
     if row['doc_source'] == 'custom':
         url_fmt = generate_custom_source_url(row['external_url'])
 
     row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>"
 
-    ## Document detail url
+    # Actions:Document detail url
     if row['detail_url'] is not None:
         row_str += f" <a href='{row['detail_url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
     row_str += "|"
@@ -100,7 +100,7 @@ def render_results_table(results):
                 border-radius: 4px;
                 color: #FFFFDE;
                 white-space: nowrap;
-            }           
+            }
             .tag.kamer-motie {
                 background-color: #FF8E15
             }
@@ -115,7 +115,7 @@ def render_results_table(results):
             }
             .tag.kamer-commissiedebat {
                 background-color: #99550D
-            } 
+            }
             .tag.kamer-schriftelijk-overleg {
                 background-color: #DE903E
             }
@@ -142,7 +142,7 @@ def render_results_table(results):
                 color:#333;
                 background-color: #FF4E1199;
             }
-            
+
             a.details-link {
                 background-color: rgb(0,104,201);
                 color: white;

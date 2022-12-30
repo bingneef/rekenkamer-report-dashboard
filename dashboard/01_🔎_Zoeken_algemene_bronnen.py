@@ -1,12 +1,14 @@
-import streamlit as st
 import os
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+import streamlit as st
+
 from helpers.app_engine import search, list_sources, format_source, deflate_group_sources
-from helpers.input import focus_first_input
 from helpers.config import set_page_config
-from helpers.table import render_results_table
+from helpers.input import focus_first_input
 from helpers.plots import prep_df_date, bar_plot, heatmap_plot
+from helpers.table import render_results_table
 
 if 'extended_search' not in st.session_state:
     st.session_state.extended_search = False

@@ -1,8 +1,8 @@
-from minio import Minio
-from minio.deleteobjects import DeleteObject
-from minio.error import S3Error
 import os
 
+from minio.error import S3Error
+
+from minio import Minio
 
 client = Minio(
     os.getenv('MINIO_HOST'),

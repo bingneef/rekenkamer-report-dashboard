@@ -1,5 +1,6 @@
-import streamlit as st
 import os
+
+import streamlit as st
 
 
 def set_page_config(**kwargs):
@@ -11,7 +12,7 @@ def set_page_config(**kwargs):
         </style>
     """
     st.markdown(custom_style, unsafe_allow_html=True)
-    
+
     if os.getenv("ENV") == "PRODUCTION":
         hide_menu_style = """
             <style>

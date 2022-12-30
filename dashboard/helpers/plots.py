@@ -1,13 +1,16 @@
-import streamlit as st
-import pandas as pd
-import seaborn as sns
+import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
-import datetime
+import pandas as pd
+import seaborn as sns
+import streamlit as st
 
 
 @st.experimental_memo
 def prep_df_date(df):
+    sns.set_theme(style="darkgrid")
+
     df['date'] = df['date'].apply(lambda x: x.split('T')[0])
     df['date'] = pd.to_datetime(df['date'])
     df['year'] = df['date'].dt.year
@@ -18,9 +21,6 @@ def prep_df_date(df):
 
 @st.experimental_memo
 def bar_plot(df, kind='count'):
-    labels = np.flip(df['doc_sub_source'].unique())
-
-    sns.set_theme(style="darkgrid")
     fig = plt.figure(figsize=(10, 5))
 
     df_barplot = df.groupby(['doc_sub_source', 'year'])['score']
@@ -43,7 +43,6 @@ def bar_plot(df, kind='count'):
         ylabel = 'Aantal documenten'
 
     ax.set(xlabel='Jaar', ylabel=ylabel)
-    # ax.legend(loc='upper left')
     plt.xticks(rotation=45)
 
     if kind == 'sum':

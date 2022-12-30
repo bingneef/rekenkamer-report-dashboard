@@ -1,6 +1,7 @@
-from elastic_enterprise_search import AppSearch, exceptions
-import streamlit as st
 import os
+
+import streamlit as st
+from elastic_enterprise_search import AppSearch, exceptions
 from helpers.minio import put_object, MinioError
 
 
