@@ -17,4 +17,4 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT ["python3", "-u -m", "streamlit", "run", "dashboard/01_🔎_Zoeken_algemene_bronnen.py", "--server.port=8501", "--server.address=0.0.0.0"]
+ENTRYPOINT ["python3", "-um", "streamlit", "run", "dashboard/01_🔎_Zoeken_algemene_bronnen.py", "--server.port=8501", "--server.address=0.0.0.0"]

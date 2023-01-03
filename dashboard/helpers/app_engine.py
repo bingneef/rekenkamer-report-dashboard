@@ -83,8 +83,14 @@ def deflate_group_sources(grouped_sources):
 
 
 @st.experimental_memo(show_spinner=False, ttl=60)
-def search(query, engine_name='source-main', limit=10, filters={}):
+def search(query, engine_name='source-main', limit=10, filters={}, boosts=None):
+    # Cannot provide these keys to Elastic if not set, so make them fully optional
+    optional_args = {}
+    if boosts is not None:
+        optional_args['boosts'] = boosts
+
     data = app_search.search(
+        **optional_args,
         engine_name=engine_name,
         query=query,
         page_size=limit,
@@ -99,16 +105,6 @@ def search(query, engine_name='source-main', limit=10, filters={}):
             "url": {
                 "weight": 2
             }
-        },
-        boosts={
-            "relevancy": [
-                {
-                    "type": "functional",
-                    "function": "linear",
-                    "operation": "multiply",
-                    "factor": 0.5
-                }
-            ]
         },
         result_fields={
             "id": {"raw": {}},
@@ -148,11 +144,34 @@ def search(query, engine_name='source-main', limit=10, filters={}):
 
 @st.experimental_memo(show_spinner=False, ttl=60)
 def get_engine_stats():
-    api_engine = app_search.get_engine(engine_name='source-main')
-    total_documents = api_engine['document_count']
+    data = app_search.search(
+        query="",
+        engine_name="source-main",
+        page_size=0,
+        facets={
+            'doc_sub_source': [
+                {
+                    'type': 'value',
+                    'name': 'doc_sub_source_facets',
+                    'sort': {'count': 'desc'}
+                }
+            ]
+        }
+    )
+
+    sub_source_facets_data = data['facets']['doc_sub_source'][0]['data']
+    source_data = map(
+        lambda source: {'name': format_source(source['value']), 'document_count': source['count']},
+        sub_source_facets_data
+    )
+    source_data = list(source_data)
+
+    total_documents = sum(item['document_count'] for item in source_data)
 
     return {
-        'total_documents': total_documents
+        'total_documents': total_documents,
+        'total_sources': len(source_data),
+        'sources_data': source_data
     }
 
 

@@ -59,27 +59,29 @@ def render_form_controls():
 
 def render_extended_form_controls():
     st.checkbox('Uitgebreid zoeken', on_change=set_extended_search)
-    doc_types = start_year = end_year = None
+    boost_recent = True
+    start_year = end_year = None
 
     if st.session_state.extended_search:
         ad_col1, ad_col2 = st.columns([0.5, 1], gap='large')
-        doc_types = ad_col1.multiselect(
-            'Soort document',
-            ('pdf', 'docx', 'doc', 'txt'),
-            default=['pdf', 'docx', 'doc', 'txt'])
+        with ad_col2:
+            # Hack to ensure vertical alignment
+            st.markdown('&nbsp;', unsafe_allow_html=True)
+            boost_recent = st.checkbox('Boost recente documenten', help="Geef meer waarde aan recente documenten",
+                                       value=True)
 
-        start_year, end_year = ad_col2.select_slider(
-            'Publicatie jaar',
-            options=np.arange(1990, 2023),
-            value=(2010, 2022)
-        )
+        with ad_col1:
+            start_year, end_year = st.select_slider(
+                'Publicatie jaar',
+                options=np.arange(1990, 2024),
+                value=(2010, 2023)
+            )
 
-    return doc_types, start_year, end_year
+    return boost_recent, start_year, end_year
 
 
-def extended_search_payload(doc_types, start_year, end_year):
+def extended_search_payload(start_year, end_year):
     return [
-        {"extension": doc_types},
         {
             "date": {
                 "from": f"{start_year}-01-01T00:00:00+00:00",
@@ -99,21 +101,40 @@ def main():
     st.markdown("# Zoeken in algemene bronnen🔎")
 
     query, sources, limit = render_form_controls()
-    doc_types, start_year, end_year = render_extended_form_controls()
+    boost_recent, start_year, end_year = render_extended_form_controls()
 
     if query is not None and query != '':
+        boosts = None
+        if boost_recent:
+            boosts = {
+                "relevancy": [
+                    {
+                        "type": "functional",
+                        "function": "linear",
+                        "operation": "multiply",
+                        "factor": 0.5
+                    }
+                ]
+            }
+
         filters = []
         if len(sources) > 0:
             filters.append({'doc_sub_source': deflate_group_sources(sources)})
 
         if st.session_state.extended_search:
-            filters.extend(extended_search_payload(doc_types, start_year, end_year))
+            filters.extend(extended_search_payload(start_year, end_year))
+
+        default_args = {
+            'query': query,
+            'limit': limit,
+            'boosts': boosts
+        }
 
         if SEARCH_TYPE == 'engines':
             # If custom sources are specified, we search the engine
-            results = search(query=query, limit=limit, engine_name=sources)
+            results = search(**default_args, engine_name=sources)
         else:
-            results = search(query=query, limit=limit, filters={'all': filters})
+            results = search(**default_args, filters={'all': filters})
 
         if len(results) == 0:
             st.write("Geen resultaten gevonden")
