@@ -37,17 +37,20 @@ data = [
 ]
 
 
-def table_of_contents_str(data):
+def table_of_contents_str(items):
     return "\\\n".join(
         map(
             lambda item: f"[{item['question']}](#{anchor_from_question(item['question'])})",
-            data
+            items
         )
     )
 
 
-st.markdown(table_of_contents_str(data))
+def echo_questions(items):
+    for item in items:
+        st.subheader(item['question'], anchor=anchor_from_question(item['question']))
+        st.markdown(item['answer'])
 
-for item in data:
-    st.subheader(item['question'], anchor=anchor_from_question(item['question']))
-    st.markdown(item['answer'])
+
+st.markdown(table_of_contents_str(data))
+echo_questions(data)
