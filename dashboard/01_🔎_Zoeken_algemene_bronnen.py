@@ -10,8 +10,12 @@ from helpers.input import focus_first_input
 from helpers.plots import prep_df_date, bar_plot, heatmap_plot
 from helpers.table import render_results_table
 
+# FIXME: add all filters
 if 'extended_search' not in st.session_state:
     st.session_state.extended_search = False
+
+if 'query' not in st.session_state:
+    st.session_state.query = ""
 
 if os.getenv("CUSTOM_SOURCES_MAIN_SEARCH", '') == '':
     SEARCH_TYPE = 'sources'
@@ -38,7 +42,9 @@ def render_plots(df):
 def render_form_controls():
     col1, col2, col3 = st.columns([1, 0.5, 0.5])
 
-    query = col1.text_input('Zoekterm', placeholder="Wat zoek je?")
+    query = col1.text_input('Zoekterm', placeholder="Wat zoek je?", value=st.session_state.query)
+    st.session_state.query = query
+
     if SEARCH_TYPE == 'engines':
         input_type = col2.selectbox
     else:
@@ -58,7 +64,7 @@ def render_form_controls():
 
 
 def render_extended_form_controls():
-    st.checkbox('Uitgebreid zoeken', on_change=set_extended_search)
+    st.checkbox('Uitgebreid zoeken', on_change=set_extended_search, value=st.session_state.extended_search)
     boost_recent = True
     start_year = end_year = None
 
