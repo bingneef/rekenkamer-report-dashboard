@@ -61,6 +61,15 @@ data = [
         De volledige lijst met mogelijkheden kan [hier](https://lucene.apache.org/core/2_9_4/queryparsersyntax.html) worden geraadpleegd. """
     },
     {
+        'question': "📏 Hoe wordt de *doc lengte* bepaald?",
+        'answer': """De *doc lengte* wordt bepaald door het aantal tekens in het document. De verdeling is al volgt:\\
+        1. **Heel klein**: tot 1000 tekens (tot ongeveer 0.5 pagina's)\\
+        2. **Klein**: van 1001 tot 10.000 tekens (ongeveer 0.5 tot 5 pagina's)\\
+        3. **Middel**: van 10.001 tot 100.000 tekens (ongeveer 5 tot 50 pagina's)\\
+        4. **Groot**: van 100.001 tot 500.000 tekens (ongeveer 50 tot 250 pagina's)\\
+        5. **Heel groot**: vanaf 500.001 tekens (vanaf ongeveer 250 pagina's)"""
+    },
+    {
         'question': "🤖 Welke data worden van mij verzameld?",
         'answer': """Ter verbetering van de applicatie wordt anonieme data verzameld. Het gaat hier om:\\
         1. Gezochte zoekterm(en)\\

@@ -1,10 +1,12 @@
 import os
 
 import streamlit as st
-from helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, AppEngineError
-from helpers.config import set_page_config
-from helpers.minio import delete_custom_source_bucket, MinioError
-from helpers.table import render_results_table
+
+from ..helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, \
+    AppEngineError
+from ..helpers.config import set_page_config
+from ..helpers.minio import delete_custom_source_bucket, MinioError
+from ..helpers.table import render_results_table
 
 if 'add_custom_source' not in st.session_state:
     st.session_state['add_custom_source'] = False
@@ -65,7 +67,7 @@ def main():
         if query is not None and query != '':
             results = search(query=query, engine_name=f"source-custom-{source}", limit=limit)
 
-            if len(results) == 0:
+            if len(results['documents']) == 0:
                 st.write("Geen resultaten gevonden")
             else:
                 render_results_table(results)

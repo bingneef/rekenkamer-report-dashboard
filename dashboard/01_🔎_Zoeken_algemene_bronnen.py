@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from helpers.app_engine import search, list_sources, format_source, deflate_group_sources
+from helpers.app_engine import search, search_max_documents, list_sources, format_source, deflate_group_sources
 from helpers.config import set_page_config
 from helpers.input import focus_first_input
 from helpers.plots import prep_df_date, bar_plot, heatmap_plot
@@ -58,7 +58,7 @@ def render_form_controls():
     limit = col3.selectbox(
         'Aantal resultaten',
         (10, 25, 50, 100, 250, 500, 1000),
-        index=4)
+        index=3)
 
     return query, sources, limit
 
@@ -138,11 +138,13 @@ def main():
 
         if SEARCH_TYPE == 'engines':
             # If custom sources are specified, we search the engine
-            results = search(**default_args, engine_name=sources)
+            search_args = {**default_args, 'engine_name': sources}
         else:
-            results = search(**default_args, filters={'all': filters})
+            search_args = {**default_args, 'filters': {'all': filters}}
 
-        if len(results) == 0:
+        results = search(**search_args)
+
+        if len(results['documents']) == 0:
             st.write("Geen resultaten gevonden")
         else:
             tab1, tab2 = st.tabs(["Documenten 📄", "Grafieken 📊"])
@@ -153,9 +155,16 @@ def main():
 
             # Plot
             with tab2:
+                load_all = st.checkbox("Laad alle resultaten", value=False)
+                if load_all:
+                    print("Loading all documents")
+                    plot_results = search_max_documents(**search_args)
+                else:
+                    plot_results = results
+
                 df = pd.DataFrame(
-                    results,
-                    columns=['id', 'title', 'url', 'doc_sub_source', 'extension', 'date', 'score']
+                    plot_results['documents'],
+                    columns=['id', 'doc_sub_source', 'date', 'score']
                 )
                 df = prep_df_date(df)
                 render_plots(df)

@@ -1,5 +1,5 @@
 def test_focus_first_input(mocker):
-    from input import focus_first_input
+    from .input import focus_first_input
 
     m = mocker.patch('streamlit.components.v1.html')
     script = """
