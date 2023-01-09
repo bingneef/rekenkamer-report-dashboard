@@ -14,9 +14,6 @@ from helpers.table import render_results_table
 if 'extended_search' not in st.session_state:
     st.session_state.extended_search = False
 
-if 'query' not in st.session_state:
-    st.session_state.query = ""
-
 if os.getenv("CUSTOM_SOURCES_MAIN_SEARCH", '') == '':
     SEARCH_TYPE = 'sources'
 else:
@@ -42,8 +39,7 @@ def render_plots(df):
 def render_form_controls():
     col1, col2, col3 = st.columns([1, 0.5, 0.5])
 
-    query = col1.text_input('Zoekterm', placeholder="Wat zoek je?", value=st.session_state.query)
-    st.session_state.query = query
+    query = col1.text_input('Zoekterm', placeholder="Wat zoek je?")
 
     if SEARCH_TYPE == 'engines':
         input_type = col2.selectbox

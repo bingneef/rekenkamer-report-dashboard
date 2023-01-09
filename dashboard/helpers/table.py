@@ -77,8 +77,8 @@ def render_row(row):
     row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>"
 
     # Actions:Document detail url
-    if row['url'] is not None:
-        row_str += f" <a href='{row['url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
+    if row['meta_detail_url'] is not None:
+        row_str += f" <a href='{row['meta_detail_url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
     row_str += "|"
 
     row_str += "\n"
