@@ -1,7 +1,7 @@
-from elastic_enterprise_search import AppSearch, exceptions
-import pandas as pd
-import streamlit as st
 import os
+
+import streamlit as st
+from elastic_enterprise_search import AppSearch, exceptions
 from helpers.minio import put_object, MinioError
 
 
@@ -14,28 +14,140 @@ app_search = AppSearch(
     http_auth=os.getenv("ENGINE_AUTH")
 )
 
-public_sources = {
-    'Alle': 'source-all',
-    'Alle rapporten': 'source-public-reports',
-    'Alle kamerstukken': 'source-kamerstukken',
-    'Rekenkamer': 'source-rekenkamer',
-    'Rathenau': 'source-rathenau',
-    'Commissiedebat': 'source-kamer-commissiedebatten',
-    'Kamervraag': 'source-kamer-kamervragen',
-    'Kamerbrief': 'source-kamer-briefregering',
-    'Motie': 'source-kamer-moties',
-    'Wetgevingsoverleg': 'source-kamer-wetgevingsoverleggen'
+ALL_REPORTS = [
+    'rekenkamer',
+    'rathenau'
+]
+
+ALL_KAMERSTUKKEN = [
+    'Verslag van een commissiedebat',
+    'Brief regering',
+    'Verslag van een wetgevingsoverleg',
+    'Motie',
+    'Schriftelijke vragen',
+    'Verslag van een schriftelijk overleg'
+]
+
+default_sources = {
+    'all_reports': 'Alle rapporten',
+    'rekenkamer': 'Algemene Rekenkamer',
+    'rathenau': 'Rathenau',
+    'all_kamerstukken': 'Alle kamerstukken',
+    'Verslag van een commissiedebat': 'Commissiedebat',
+    'Brief regering': 'Kamerbrief',
+    'Verslag van een wetgevingsoverleg': 'Wetgevingsoverleg',
+    'Motie': 'Motie',
+    'Schriftelijke vragen': 'Kamervraag',
+    'Verslag van een schriftelijk overleg': 'Schritelijk overleg'
 }
 
-sources = public_sources.keys()
+
+@st.experimental_memo
+def list_sources():
+    env_sources = os.getenv("CUSTOM_SOURCES_MAIN_SEARCH", '')
+    if env_sources == '':
+        return default_sources
+
+    sources = {}
+    for env_source in env_sources.split(','):
+        key, name = env_source.split(':')
+        sources[key] = name
+
+    return sources
+
+
+def format_source(sub_source):
+    if sub_source in list_sources().keys():
+        return list_sources()[sub_source]
+
+    # Allow mapping for custom sources
+    if f"source-custom-{sub_source}" in list_sources().keys():
+        return list_sources()[f"source-custom-{sub_source}"]
+
+    return sub_source
+
+
+def deflate_group_sources(grouped_sources):
+    sources = []
+    for grouped_source in grouped_sources:
+        if grouped_source == 'all':
+            sources.extend(ALL_REPORTS + ALL_KAMERSTUKKEN)
+        elif grouped_source == 'all_reports':
+            sources.extend(ALL_REPORTS)
+        elif grouped_source == 'all_kamerstukken':
+            sources.extend(ALL_KAMERSTUKKEN)
+        else:
+            sources.append(grouped_source)
+
+    return sources
+
+
+@st.experimental_memo(show_spinner=False, ttl=60 * 60 * 24)
+def search_max_documents(**kwargs):
+    results = {'documents': []}
+
+    current_page = 1
+    while True:
+        print(f"Searching page {current_page}, currently at {(len(results['documents']))} documents")
+        search_args = {
+            **kwargs,
+            'limit': 1000,
+            'current_page': current_page
+        }
+        page_results = search(
+            **search_args
+        )
+        if 'meta' not in results.keys():
+            results['meta'] = page_results['meta']
+
+        results['documents'].extend(page_results['documents'])
+
+        all_documents_loaded = len(results['documents']) >= results['meta']['total_documents']
+        no_more_new_documents = len(page_results['documents']) == 0
+
+        if all_documents_loaded or no_more_new_documents:
+            return results
+
+        current_page += 1
 
 
 @st.experimental_memo(show_spinner=False, ttl=60)
-def search(query, engine_name, limit=10, filters={}):
+def search(
+    query,
+    engine_name='source-main',
+    limit=10,
+    current_page=1,
+    filters={},
+    boosts=None,
+    result_fields=None
+):
+    if result_fields is None:
+        result_fields = [
+            "id",
+            "title",
+            "url",
+            "doc_source",
+            "doc_sub_source",
+            "doc_size",
+            "extension",
+            "date",
+            "meta_detail_url"
+        ]
+    # Cannot provide these keys to Elastic if not set, so make them fully optional
+    optional_args = {}
+    if boosts is not None:
+        optional_args['boosts'] = boosts
+
+    result_fields_mapped = {}
+    for result_field in result_fields:
+        result_fields_mapped[result_field] = {'raw': {}}
+
     data = app_search.search(
+        **optional_args,
         engine_name=engine_name,
         query=query,
         page_size=limit,
+        current_page=current_page,
         filters=filters,
         search_fields={
             "title": {
@@ -48,84 +160,67 @@ def search(query, engine_name, limit=10, filters={}):
                 "weight": 2
             }
         },
-        boosts={
-            "relevancy": [
-                {
-                    "type": "functional",
-                    "function": "linear",
-                    "operation": "multiply",
-                    "factor": 0.5
-                }
-            ]
-        },
-        result_fields={
-            "id": {"raw": {}},
-            "title": {"raw": {}},
-            "url": {"raw": {}},
-            "doc_source": {"raw": {}},
-            "doc_size": {"raw": {}},
-            "extension": {"raw": {}},
-            "date": {"raw": {}},
-            "meta_detail_url": {"raw": {}}
-        }
+        result_fields=result_fields_mapped
     )
 
     results = []
     for result in data['results']:
-        try:
-            detail_url = result['meta_detail_url']['raw']
-        except KeyError:
-            detail_url = None
-
-        results.append({
-            'id': result['id']['raw'],
-            'title': result['title']['raw'],
-            'external_url': result['url']['raw'],
-            'doc_source': result['doc_source']['raw'],
-            'doc_size': result['doc_size']['raw'],
-            'detail_url': detail_url,
-            'extension': result['extension']['raw'],
-            'date': result['date']['raw'],
+        row = {
             'score': result['_meta']['score']
-        })
+        }
 
-    return results
+        for result_field in result_fields:
+            try:
+                row[result_field] = result[result_field]['raw']
+            except KeyError:
+                row[result_field] = None
+
+        if 'doc_sub_source' in row.keys():
+            row['doc_sub_source'] = format_source(row['doc_sub_source'])
+
+        results.append(row)
+
+    print(f"Found {data['meta']['page']['total_results']} result(s) for {query}")
+
+    return {
+        'meta': {
+            'total_documents': data['meta']['page']['total_results']
+        },
+        'documents': results
+    }
 
 
 @st.experimental_memo(show_spinner=False, ttl=60)
 def get_engine_stats():
-    api_engines = app_search.list_engines()
-
-    public_engines = []
-    custom_engines = []
-    total_documents = 0
-    total_engines = 0
-
-    for api_engine in api_engines['results']:
-        if api_engine['type'] != 'default':
-            continue
-
-        total_documents += api_engine['document_count']
-        total_engines += 1
-
-        engine = {
-            'name': api_engine['name'].replace('source-', '').replace('custom-', ''),
-            'language': api_engine['language'] or 'Universal',
-            'document_count': api_engine['document_count'],
+    data = app_search.search(
+        query="",
+        engine_name="source-main",
+        page_size=0,
+        facets={
+            'doc_sub_source': [
+                {
+                    'type': 'value',
+                    'name': 'doc_sub_source_facets',
+                    'sort': {'count': 'desc'}
+                }
+            ]
         }
-        if api_engine['name'].startswith('source-custom-'):
-            custom_engines.append(engine)
-        else:
-            public_engines.append(engine)
+    )
+
+    sub_source_facets_data = data['facets']['doc_sub_source'][0]['data']
+    source_data = map(
+        lambda source: {'name': format_source(source['value']), 'document_count': source['count']},
+        sub_source_facets_data
+    )
+    source_data = list(source_data)
+
+    total_documents = sum(item['document_count'] for item in source_data)
 
     return {
-        'total_engines': total_engines,
         'total_documents': total_documents,
-        'df_public_engines': pd.DataFrame.from_dict(public_engines).sort_values(by='name').reset_index(drop=True),
-        'df_custom_engines': pd.DataFrame.from_dict(custom_engines).sort_values(by='name').reset_index(drop=True)
+        'total_sources': len(source_data),
+        'sources_data': source_data
     }
-
-    return data
 
 
 def send_documents_to_external_storage(source_name, documents):
@@ -165,7 +260,3 @@ def custom_sources():
             custom_engines.append(api_engine['name'])
 
     return custom_engines
-
-
-def public_source_to_engine_name(public_source):
-    return public_sources[public_source]

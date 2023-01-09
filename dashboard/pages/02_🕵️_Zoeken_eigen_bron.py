@@ -1,19 +1,15 @@
+import os
+
 import streamlit as st
-from helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, AppEngineError
-from helpers.minio import delete_custom_source_bucket, MinioError
-from helpers.config import set_page_config
-from helpers.table import render_results_table
+
+from ..helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, \
+    AppEngineError
+from ..helpers.config import set_page_config
+from ..helpers.minio import delete_custom_source_bucket, MinioError
+from ..helpers.table import render_results_table
 
 if 'add_custom_source' not in st.session_state:
     st.session_state['add_custom_source'] = False
-
-set_page_config(
-    page_title="Zoeken in eigen bron",
-    page_icon="🕵️",
-    layout="wide"
-)
-
-st.markdown("# Zoeken in eigen bron 🕵️")
 
 
 def render_form_controls():
@@ -38,7 +34,31 @@ def render_form_controls():
     return query, source, limit
 
 
+def is_valid_engine_name(engine_name):
+    allowed_chars = set("0123456789abcdefghijklmnopqrstuvwxyz-")
+    if engine_name[0] == '-':
+        return False
+    if engine_name[-1] == '-':
+        return False
+    if not set(engine_name).issubset(allowed_chars):
+        return False
+
+    return True
+
+
 def main():
+    set_page_config(
+        page_title="Zoeken in eigen bron",
+        page_icon="🕵️",
+        layout="wide"
+    )
+
+    st.markdown("# Zoeken in eigen bron 🕵️")
+
+    if os.getenv("ENABLE_CUSTOM_SOURCE_PAGE", False) is False:
+        st.error('Deze mogelijkheid is voor deze applicatie uitgezet', icon="❌")
+        return
+
     tab1, tab2, tab3 = st.tabs(["Bron doorzoeken", "Bron toevoegen", "Bron verwijderen"])
 
     with tab1:
@@ -47,7 +67,7 @@ def main():
         if query is not None and query != '':
             results = search(query=query, engine_name=f"source-custom-{source}", limit=limit)
 
-            if len(results) == 0:
+            if len(results['documents']) == 0:
                 st.write("Geen resultaten gevonden")
             else:
                 render_results_table(results)
@@ -70,10 +90,7 @@ def main():
         if len(uploaded_files) > 0:
             def handle_submit(documents):
                 custom_source_name_fmt = custom_source_name.lower()
-                allowed_chars = set("0123456789abcdefghijklmnopqrstuvwxyz-")
-                if not set(custom_source_name_fmt).issubset(allowed_chars) \
-                        or custom_source_name_fmt[-1] == '-' \
-                        or custom_source_name_fmt[0] == '-':
+                if is_valid_engine_name(custom_source_name_fmt) is False:
                     st.error('De naam mag alleen letters, nummers en koppeltekens (-) bevatten '
                              'en mag niet met een koppelteken beginnen of eindigen.', icon="🚨")
                     return
@@ -96,7 +113,7 @@ def main():
                 delete_custom_source_bucket(custom_source_to_remove)
 
                 st.success(f"Bron {custom_source_to_remove} is verwijderd of bestond niet meer", icon="✅")
-            except (AppEngineError, MinioError) as error:
+            except (AppEngineError, MinioError):
                 st.error('Er is iets foutgegaan..', icon="🚨")
 
         custom_source = st.text_input(

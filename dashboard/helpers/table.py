@@ -1,8 +1,8 @@
-import streamlit as st
 import webbrowser
-from helpers.minio import generate_custom_source_url
 
-col_ratio = [1, 10, 2, 2, 2]
+import streamlit as st
+
+from .minio import generate_custom_source_url
 
 
 def open_document_url(url):
@@ -10,31 +10,31 @@ def open_document_url(url):
 
 
 @st.experimental_memo(ttl=60 * 60 * 24)
-def format_source(source):
+def class_from_source(source):
     mapping = {
-        'kamer_moties': ('Motie', 'kamer-motie'),
-        'kamer_kamervragen': ('Kamervraag', 'kamer-vraag'),
-        'kamer_briefregering': ('Kamerbrief', 'kamer-brief'),
-        'kamer_wetgevingsoverleggen': ('Wetgevingsoverleg', 'kamer-wetgevingsoverleg'),
-        'kamer_commissiedebatten': ('Commissiedebat', 'kamer-commissiedebat'),
-        'rekenkamer': ('AR rapport', 'rekenkamer'),
-        'rathenau': ('Rathenau', 'other')
+        'Motie': 'kamer-motie',
+        'Kamervraag': 'kamer-vraag',
+        'Kamerbrief': 'kamer-brief',
+        'Wetgevingsoverleg': 'kamer-wetgevingsoverleg',
+        'Commissiedebat': 'kamer-commissiedebat',
+        'Schritelijk overleg': 'Schritelijk kamer-schriftelijk-overleg',
+        'AR rapport': 'rekenkamer'
     }
 
     if source in mapping.keys():
         return mapping[source]
 
-    return source, 'other'
+    return 'other'
 
 
 def format_size(size):
-    if size < 1000:
+    if size <= 1000:
         return 'Zeer kort', 'very-low'
-    if size < 10_000:
+    if size <= 10_000:
         return '&nbsp;&nbsp;&nbsp;Kort&nbsp;&nbsp;&nbsp;', 'low'
-    if size < 100_000:
+    if size <= 100_000:
         return '&nbsp;Middel&nbsp;', 'middle'
-    if size < 500_000:
+    if size <= 500_000:
         return '&nbsp;&nbsp;&nbsp;Lang&nbsp;&nbsp;&nbsp;', 'high'
 
     return 'Zeer lang', 'very-high'
@@ -42,7 +42,7 @@ def format_size(size):
 
 @st.experimental_memo(ttl=60 * 60 * 24)
 def format_date(date):
-    return date[0:10]
+    return "-".join(date[0:10].split("-")[::-1])
 
 
 def render_row(row):
@@ -59,25 +59,23 @@ def render_row(row):
     row_str += f"<span class='date'>{date_fmt}</span>|"
 
     # Source
-    source_fmt, source_class = format_source(row['doc_source'])
-    row_str += f"<span class='tag {source_class}'>{source_fmt}</span>|"
+    source_class = class_from_source(row['doc_sub_source'])
+    row_str += f"<span class='tag {source_class}'>{row['doc_sub_source']}</span>|"
 
     # Size
     size_fmt, size_class = format_size(row['doc_size'])
     row_str += f"<span class='tag {size_class}'>{size_fmt}</span>|"
 
-    # Actions
-    # Document url
-    # FIXME: investigate streamlit-bridge to generate URLs on the fly
-    url_fmt = row['external_url']
+    # Actions:Document url
+    url_fmt = row['url']
     if row['doc_source'] == 'custom':
-        url_fmt = generate_custom_source_url(row['external_url'])
+        url_fmt = generate_custom_source_url(row['url'])
 
     row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>"
 
-    # Document detail url
-    if row['detail_url'] is not None:
-        row_str += f" <a href='{row['detail_url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
+    # Actions:Document detail url
+    if row['meta_detail_url'] is not None:
+        row_str += f" <a href='{row['meta_detail_url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
     row_str += "|"
 
     row_str += "\n"
@@ -99,7 +97,7 @@ def render_results_table(results):
                 border-radius: 4px;
                 color: #FFFFDE;
                 white-space: nowrap;
-            }           
+            }
             .tag.kamer-motie {
                 background-color: #FF8E15
             }
@@ -114,7 +112,10 @@ def render_results_table(results):
             }
             .tag.kamer-commissiedebat {
                 background-color: #99550D
-            } 
+            }
+            .tag.kamer-schriftelijk-overleg {
+                background-color: #DE903E
+            }
             .tag.rekenkamer {
                 background-color: #3366ff99;
             }
@@ -138,7 +139,7 @@ def render_results_table(results):
                 color:#333;
                 background-color: #FF4E1199;
             }
-            
+
             a.details-link {
                 background-color: rgb(0,104,201);
                 color: white;
