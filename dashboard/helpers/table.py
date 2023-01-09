@@ -1,11 +1,8 @@
 import webbrowser
 
 import streamlit as st
-from helpers.minio import generate_custom_source_url
-<<<<<<< HEAD
-=======
 
->>>>>>> 513ed8c (Feat: add minio generate custom url)
+from .minio import generate_custom_source_url
 
 
 def open_document_url(url):
@@ -31,13 +28,13 @@ def class_from_source(source):
 
 
 def format_size(size):
-    if size < 1000:
+    if size <= 1000:
         return 'Zeer kort', 'very-low'
-    if size < 10_000:
+    if size <= 10_000:
         return '&nbsp;&nbsp;&nbsp;Kort&nbsp;&nbsp;&nbsp;', 'low'
-    if size < 100_000:
+    if size <= 100_000:
         return '&nbsp;Middel&nbsp;', 'middle'
-    if size < 500_000:
+    if size <= 500_000:
         return '&nbsp;&nbsp;&nbsp;Lang&nbsp;&nbsp;&nbsp;', 'high'
 
     return 'Zeer lang', 'very-high'
@@ -45,7 +42,7 @@ def format_size(size):
 
 @st.experimental_memo(ttl=60 * 60 * 24)
 def format_date(date):
-    return date[0:10]
+    return "-".join(date[0:10].split("-")[::-1])
 
 
 def render_row(row):
