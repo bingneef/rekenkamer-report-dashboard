@@ -70,15 +70,15 @@ def render_row(row):
     row_str += f"<span class='tag {size_class}'>{size_fmt}</span>|"
 
     # Actions:Document url
-    url_fmt = row['external_url']
+    url_fmt = row['url']
     if row['doc_source'] == 'custom':
-        url_fmt = generate_custom_source_url(row['external_url'])
+        url_fmt = generate_custom_source_url(row['url'])
 
     row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>"
 
     # Actions:Document detail url
-    if row['detail_url'] is not None:
-        row_str += f" <a href='{row['detail_url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
+    if row['url'] is not None:
+        row_str += f" <a href='{row['url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
     row_str += "|"
 
     row_str += "\n"

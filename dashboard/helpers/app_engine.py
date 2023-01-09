@@ -111,7 +111,6 @@ def search_max_documents(**kwargs):
         current_page += 1
 
 
-# FIXME: query more items for graphs
 @st.experimental_memo(show_spinner=False, ttl=60)
 def search(
     query,
@@ -119,24 +118,26 @@ def search(
     limit=10,
     current_page=1,
     filters={},
-    boosts=None
+    boosts=None,
+    result_fields=None
 ):
+    if result_fields is None:
+        result_fields = [
+            "id",
+            "title",
+            "url",
+            "doc_source",
+            "doc_sub_source",
+            "doc_size",
+            "extension",
+            "date",
+            "meta_detail_url"
+        ]
     # Cannot provide these keys to Elastic if not set, so make them fully optional
     optional_args = {}
     if boosts is not None:
         optional_args['boosts'] = boosts
 
-    result_fields = [
-        "id",
-        "title",
-        "url",
-        "doc_source",
-        "doc_sub_source",
-        "doc_size",
-        "extension",
-        "date",
-        "meta_detail_url"
-    ]
     result_fields_mapped = {}
     for result_field in result_fields:
         result_fields_mapped[result_field] = {'raw': {}}
@@ -164,23 +165,20 @@ def search(
 
     results = []
     for result in data['results']:
-        try:
-            detail_url = result['meta_detail_url']['raw']
-        except KeyError:
-            detail_url = None
+        row = {
+            'score': result['_meta']['score']
+        }
 
-        results.append({
-            'id': result['id']['raw'],
-            'title': result['title']['raw'],
-            'external_url': result['url']['raw'],
-            'doc_source': result['doc_source']['raw'],
-            'doc_sub_source': format_source(result['doc_sub_source']['raw']),
-            'doc_size': result['doc_size']['raw'],
-            'detail_url': detail_url,
-            'extension': result['extension']['raw'],
-            'date': result['date']['raw'],
+        for result_field in result_fields:
+            try:
+                row[result_field] = result[result_field]['raw']
+            except KeyError:
+                row[result_field] = None
 
-        })
+        if 'doc_sub_source' in row.keys():
+            row['doc_sub_source'] = format_source(row['doc_sub_source'])
+
+        results.append(row)
 
     print(f"Found {data['meta']['page']['total_results']} result(s) for {query}")
 

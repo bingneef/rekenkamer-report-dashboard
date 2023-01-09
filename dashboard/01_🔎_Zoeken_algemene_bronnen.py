@@ -158,7 +158,7 @@ def main():
                 load_all = st.checkbox("Laad alle resultaten", value=False)
                 if load_all:
                     print("Loading all documents")
-                    plot_results = search_max_documents(**search_args)
+                    plot_results = search_max_documents(**search_args, result_fields=['id', 'doc_sub_source', 'date'])
                 else:
                     plot_results = results
 
