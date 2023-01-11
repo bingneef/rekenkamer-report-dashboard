@@ -71,11 +71,13 @@ def render_row(row):
     if row['doc_source'] == 'custom':
         url_fmt = generate_custom_source_url(row['url'])
 
-    row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>"
+    row_str += f"<a plausible-event-name='Document+link' plausible-event-source='{row['doc_source']}' " \
+               f"href='{url_fmt}' target='_blank'>Openen</a>"
 
     # Actions:Document detail url
     if row['meta_detail_url'] is not None:
-        row_str += f" <a href='{row['meta_detail_url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
+        row_str += f" <a plausible-event-name='Detail+link' plausible-event-source='{row['doc_source']}' " \
+                   f"href='{row['meta_detail_url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
     row_str += "|"
 
     row_str += "\n"

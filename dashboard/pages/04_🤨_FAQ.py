@@ -22,18 +22,23 @@ data = [
     {
         'question': "📈 Hoe wordt de score bepaald?",
         'answer': """Als basis van de zoektool wordt ElasticSearch gebruikt. Deze open source technologie is 
-        marktleider op het gebied van tekst doorzoeken. De onderliggende score engine heeft het Okapi BM25 algoritme als basis .
-        Kort gezegd bestaat de berekende score uit drie factoren:\\
+        marktleider op het gebied van tekst doorzoeken. De onderliggende score engine heeft het Okapi BM25 algoritme 
+        als basis. Kort gezegd bestaat de berekende score uit drie factoren:\\
         \\
-        **1. Term frequency (TF)** Hoe vaker een zoekterm voorkomt, hoe relevanter het document. ElasticSearch zoekt naast exacte termen ook naar die termen die dezelfde stam hebben (zoals digitaal vs digitalisering).\\
-        **2. Inverse document frequency (IDF)** Hoe meer documenten de zoekterm bevatten, hoe minder relevant de zoekterm.\\
+        **1. Term frequency (TF)** Hoe vaker een zoekterm voorkomt, hoe relevanter het document. ElasticSearch zoekt 
+        naast exacte termen ook naar die termen die dezelfde stam hebben (zoals digitaal vs digitalisering).\\
+        **2. Inverse document frequency (IDF)** Hoe meer documenten de zoekterm bevatten, hoe minder 
+        relevant de zoekterm.\\
         **3. Field length** Hoe langer het document, hoe minder relevant een enkele match is.\\
         \\
-        Samengevat, een document krijgt een hoge score als hij vaak één of meerdere zoektermen bevat, die relatief weinig in andere documenten worden gevonden en dat in zo min mogelijk tekst.\\
+        Samengevat, een document krijgt een hoge score als hij vaak één of meerdere zoektermen bevat, die relatief 
+        weinig in andere documenten worden gevonden en dat in zo min mogelijk tekst.\\
         \\
-        **Dit betekent dus dat beknopte documenten (zoals veel kamerstukken) vaker een hogere score krijgen dan lange (AR) rapporten!**\\
+        **Dit betekent dus dat beknopte documenten (zoals veel kamerstukken) vaker een hogere score krijgen dan lange 
+        (AR) rapporten!**\\
         \\
-        Meer informatie over het score algoritme kan je [hier](https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables) 
+        Meer informatie over het score algoritme kan je 
+        [hier](https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables) 
         vinden (engels). """
     },
     {
@@ -56,9 +61,11 @@ data = [
         2. `elastic -lucene`: de `-` geeft aan dat het volgende woord *niet* in de zoekresultaten mag voorkomen\\
         3. `\"elastic lucene\"`: de `\"` geeft aan dat de worden binnen de quotes exact moeten voorkomen 
         en ook in die volgorde.\\
-        4. `elastic AND lucene` de `AND` geeft aan dat beide woorden in het document moeten worden gevonden, de volgorde maakt niet uit.\\
+        4. `elastic AND lucene` de `AND` geeft aan dat beide woorden in het document moeten worden gevonden, de 
+        volgorde maakt niet uit.\\
         \\
-        De volledige lijst met mogelijkheden kan [hier](https://lucene.apache.org/core/2_9_4/queryparsersyntax.html) worden geraadpleegd. """
+        De volledige lijst met mogelijkheden kan [hier](https://lucene.apache.org/core/2_9_4/queryparsersyntax.html) 
+        worden geraadpleegd. """
     },
     {
         'question': "📏 Hoe wordt de *doc lengte* bepaald?",
@@ -79,11 +86,13 @@ data = [
     },
     {
         'question': "💡 Ik heb een goed idee ter verbetering van de zoektool, waar kan ik terecht?",
-        'answer': "Je kan een mail sturen naar [b.steup@rekenkamer.nl](mailto:b.steup@rekenkamer.nl), dan help ik je vanuit daar verder."
+        'answer': "Je kan een mail sturen naar [b.steup@rekenkamer.nl](mailto:b.steup@rekenkamer.nl), dan help ik je "
+                  "vanuit daar verder."
     },
     {
         'question': "🤷 Mijn vraag staat er niet tussen?",
-        'answer': "Je kan een mail sturen naar [b.steup@rekenkamer.nl](mailto:b.steup@rekenkamer.nl), dan help ik je vanuit daar verder."
+        'answer': "Je kan een mail sturen naar [b.steup@rekenkamer.nl](mailto:b.steup@rekenkamer.nl), dan help ik je "
+                  "vanuit daar verder."
     }
 ]
 
@@ -103,5 +112,6 @@ def echo_questions(items):
         st.markdown(item['answer'], unsafe_allow_html=True)
 
 
+st.markdown("<button plausible-event-name='Test' href='https://google.com'>link</button>", unsafe_allow_html=True)
 st.markdown(table_of_contents_str(data))
 echo_questions(data)
