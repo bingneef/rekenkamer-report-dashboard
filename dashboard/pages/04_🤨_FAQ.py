@@ -1,4 +1,5 @@
 import streamlit as st
+
 from helpers.config import set_page_config
 
 
@@ -16,24 +17,30 @@ st.markdown("# FAQ 🤨")
 data = [
     {
         'question': "🚦 Kan ik de zoektool al gebruiken voor mijn onderzoek?",
-        'answer': """Dat kan zeker, maar de applicatie is nog in ontwikkeling. Dit betekend dat de zoektool er elk 
+        'answer': """Dat kan zeker, maar de applicatie is nog in ontwikkeling. Dit betekend dat de zoektool er elk
         moment uit kan liggen, functionaliteit nog kan wijzigen en vaker foutmeldingen zal tonen."""
     },
     {
         'question': "📈 Hoe wordt de score bepaald?",
-        'answer': """Als basis van de zoektool wordt ElasticSearch gebruikt. Deze open source technologie is 
-        marktleider op het gebied van tekst doorzoeken. De onderliggende score engine heeft het Okapi BM25 algoritme als basis .
+        'answer': """Als basis van de zoektool wordt ElasticSearch gebruikt. Deze open source technologie is
+        marktleider op het gebied van tekst doorzoeken. De onderliggende score engine heeft het Okapi BM25 algoritme
+        als basis .
         Kort gezegd bestaat de berekende score uit drie factoren:\\
         \\
-        **1. Term frequency (TF)** Hoe vaker een zoekterm voorkomt, hoe relevanter het document. ElasticSearch zoekt naast exacte termen ook naar die termen die dezelfde stam hebben (zoals digitaal vs digitalisering).\\
-        **2. Inverse document frequency (IDF)** Hoe meer documenten de zoekterm bevatten, hoe minder relevant de zoekterm.\\
+        **1. Term frequency (TF)** Hoe vaker een zoekterm voorkomt, hoe relevanter het document. ElasticSearch zoekt
+        naast exacte termen ook naar die termen die dezelfde stam hebben (zoals digitaal vs digitalisering).\\
+        **2. Inverse document frequency (IDF)** Hoe meer documenten de zoekterm bevatten, hoe minder
+        relevant de zoekterm.\\
         **3. Field length** Hoe langer het document, hoe minder relevant een enkele match is.\\
         \\
-        Samengevat, een document krijgt een hoge score als hij vaak één of meerdere zoektermen bevat, die relatief weinig in andere documenten worden gevonden en dat in zo min mogelijk tekst.\\
+        Samengevat, een document krijgt een hoge score als hij vaak één of meerdere zoektermen bevat, die relatief
+        weinig in andere documenten worden gevonden en dat in zo min mogelijk tekst.\\
         \\
-        **Dit betekent dus dat beknopte documenten (zoals veel kamerstukken) vaker een hogere score krijgen dan lange (AR) rapporten!**\\
+        **Dit betekent dus dat beknopte documenten (zoals veel kamerstukken) vaker een hogere score krijgen dan lange
+        (AR) rapporten!**\\
         \\
-        Meer informatie over het score algoritme kan je [hier](https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables) 
+        Meer informatie over het score algoritme kan je
+        [hier](https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables)
         vinden (engels). """
     },
     {
@@ -47,18 +54,20 @@ data = [
     },
     {
         'question': "🔦 Hoe kan ik gedetaileerder zoeken?",
-        'answer': """ElasticSearch gebruikt de *lucene* zoekengine onder de motorkap. Dit geeft de mogelijkheid om je 
-        zoektermen strakker te kunnen definiëren. Standaard zoekt ElasticSearch op `OR`, met andere woorden één van 
-        de termen moet in het document gevonden worden om als resultaat getoond te worden. Dit gegrag kan je 
+        'answer': """ElasticSearch gebruikt de *lucene* zoekengine onder de motorkap. Dit geeft de mogelijkheid om je
+        zoektermen strakker te kunnen definiëren. Standaard zoekt ElasticSearch op `OR`, met andere woorden één van
+        de termen moet in het document gevonden worden om als resultaat getoond te worden. Dit gegrag kan je
         makkelijk aanpassen, hieronder een aantalmogelijkheden.\\
         \\
         1. `elastic +lucene`: de `+` geeft aan dat het volgende woord in de zoekresultaten *moet* voorkomen.\\
         2. `elastic -lucene`: de `-` geeft aan dat het volgende woord *niet* in de zoekresultaten mag voorkomen\\
-        3. `\"elastic lucene\"`: de `\"` geeft aan dat de worden binnen de quotes exact moeten voorkomen 
+        3. `\"elastic lucene\"`: de `\"` geeft aan dat de worden binnen de quotes exact moeten voorkomen
         en ook in die volgorde.\\
-        4. `elastic AND lucene` de `AND` geeft aan dat beide woorden in het document moeten worden gevonden, de volgorde maakt niet uit.\\
+        4. `elastic AND lucene` de `AND` geeft aan dat beide woorden in het document moeten worden gevonden, de
+        volgorde maakt niet uit.\\
         \\
-        De volledige lijst met mogelijkheden kan [hier](https://lucene.apache.org/core/2_9_4/queryparsersyntax.html) worden geraadpleegd. """
+        De volledige lijst met mogelijkheden kan [hier](https://lucene.apache.org/core/2_9_4/queryparsersyntax.html)
+        worden geraadpleegd. """
     },
     {
         'question': "📏 Hoe wordt de *doc lengte* bepaald?",
@@ -79,11 +88,13 @@ data = [
     },
     {
         'question': "💡 Ik heb een goed idee ter verbetering van de zoektool, waar kan ik terecht?",
-        'answer': "Je kan een mail sturen naar [b.steup@rekenkamer.nl](mailto:b.steup@rekenkamer.nl), dan help ik je vanuit daar verder."
+        'answer': "Je kan een mail sturen naar [b.steup@rekenkamer.nl](mailto:b.steup@rekenkamer.nl), dan help ik je "
+                  "vanuit daar verder."
     },
     {
         'question': "🤷 Mijn vraag staat er niet tussen?",
-        'answer': "Je kan een mail sturen naar [b.steup@rekenkamer.nl](mailto:b.steup@rekenkamer.nl), dan help ik je vanuit daar verder."
+        'answer': "Je kan een mail sturen naar [b.steup@rekenkamer.nl](mailto:b.steup@rekenkamer.nl), dan help ik je "
+                  "vanuit daar verder."
     }
 ]
 

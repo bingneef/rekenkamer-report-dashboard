@@ -1,12 +1,11 @@
 import os
 
 import streamlit as st
-
-from ..helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, \
+from helpers.app_engine import search, handle_custom_source, custom_sources, delete_custom_source_engine, \
     AppEngineError
-from ..helpers.config import set_page_config
-from ..helpers.minio import delete_custom_source_bucket, MinioError
-from ..helpers.table import render_results_table
+from helpers.config import set_page_config
+from helpers.minio import delete_custom_source_bucket, MinioError
+from helpers.table import render_results_table
 
 if 'add_custom_source' not in st.session_state:
     st.session_state['add_custom_source'] = False
@@ -55,7 +54,7 @@ def main():
 
     st.markdown("# Zoeken in eigen bron 🕵️")
 
-    if os.getenv("ENABLE_CUSTOM_SOURCE_PAGE", False) is False:
+    if os.getenv("ENABLE_CUSTOM_SOURCE_PAGE", 0) != "1":
         st.error('Deze mogelijkheid is voor deze applicatie uitgezet', icon="❌")
         return
 

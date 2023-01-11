@@ -2,7 +2,8 @@ import os
 
 import streamlit as st
 from elastic_enterprise_search import AppSearch, exceptions
-from helpers.minio import put_object, MinioError
+
+from .minio import put_object, MinioError
 
 
 class AppEngineError(Exception):
