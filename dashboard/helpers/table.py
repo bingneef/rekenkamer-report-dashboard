@@ -153,7 +153,14 @@ def render_results_table(results):
     markdown_str = "|**Score**|**Titel van het document**|**Datum**|**Bron**|**Doc lengte**|Acties|\n"
     markdown_str += "|---|---|:-:|:-:|:-:|:-:|\n"
 
-    for row in results:
+    for row in results['documents']:
         markdown_str += render_row(row)
 
+    total_documents = results['meta']['total_documents']
+    if total_documents == 1:
+        results_annot = 'document'
+    else:
+        results_annot = 'documenten'
+
+    st.markdown(f"*{total_documents} {results_annot} gevonden*")
     st.markdown(markdown_str, unsafe_allow_html=True)
