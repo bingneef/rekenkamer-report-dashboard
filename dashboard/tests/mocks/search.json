@@ -1,0 +1,81 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/as/v1/engines/source-main/search"
+  },
+  "response": {
+    "body": {
+      "meta": {
+        "page": {
+          "total_results": 2
+        }
+      },
+      "results": [
+        {
+          "_meta": {
+            "score": 26.7
+          },
+          "id": {
+            "raw": 1
+          },
+          "title": {
+            "raw": "Document title"
+          },
+          "url": {
+            "raw": "https://rekenkamer.nl/document"
+          },
+          "doc_source": {
+            "raw": "rekenkamer"
+          },
+          "doc_sub_source": {
+            "raw": "rekenkamer"
+          },
+          "doc_size": {
+            "raw": 1000
+          },
+          "extension": {
+            "raw": "pdf"
+          },
+          "date": {
+            "raw": "2022-01-01"
+          },
+          "meta_detail_url": {
+            "raw": "https://rekenkamer.nl/detail"
+          }
+        },
+        {
+          "_meta": {
+            "score": 1.7
+          },
+          "id": {
+            "raw": 2
+          },
+          "title": {
+            "raw": "Document title 2"
+          },
+          "url": {
+            "raw": "https://rathenau.nl/document"
+          },
+          "doc_source": {
+            "raw": "rathenau"
+          },
+          "doc_sub_source": {
+            "raw": "rathenau"
+          },
+          "doc_size": {
+            "raw": 10000
+          },
+          "extension": {
+            "raw": "docx"
+          },
+          "date": {
+            "raw": "2022-02-01"
+          },
+          "meta_detail_url": {
+            "raw": "https://rathenau.nl/detail"
+          }
+        }
+      ]
+    }
+  }
+}

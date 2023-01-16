@@ -1,0 +1,8 @@
+version: '3.1'
+services:
+  faker:
+    image: dotronglong/faker:stable
+    volumes:
+      - ./dashboard/tests/mocks:/app/mocks
+    ports:
+      - "3002:3030"
