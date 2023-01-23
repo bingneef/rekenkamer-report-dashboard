@@ -57,5 +57,5 @@ tzlocal==4.2
 urllib3==1.26.12
 uuid==1.30
 validators==0.20.0
-watchdog==2.1.9
+watchdog==2.2.1
 zipp==3.11.0
