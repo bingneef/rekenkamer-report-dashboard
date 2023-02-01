@@ -7,7 +7,7 @@
     "body": {
       "meta": {
         "page": {
-          "total_results": 2
+          "total_results": 4
         }
       },
       "results": [
@@ -23,6 +23,9 @@
           },
           "url": {
             "raw": "https://rekenkamer.nl/document"
+          },
+          "s3_path": {
+            "raw": "source--custom/test/015462d9-13b5-4064-a505-3a5b6b29d3c2.pdf"
           },
           "doc_source": {
             "raw": "rekenkamer"
@@ -56,6 +59,9 @@
           "url": {
             "raw": "https://rathenau.nl/document"
           },
+          "s3_path": {
+            "raw": "source--custom/test/015462d9-13b5-4064-a505-3a5b6b29d3c2.pdf"
+          },
           "doc_source": {
             "raw": "rathenau"
           },
@@ -73,6 +79,38 @@
           },
           "meta_detail_url": {
             "raw": "https://rathenau.nl/detail"
+          }
+        },
+        {
+          "_meta": {
+            "score": 1.1
+          },
+          "id": {
+            "raw": 3
+          },
+          "title": {
+            "raw": "Document title 3"
+          },
+          "url": {
+            "raw": "source--custom/test/015462d9-13b5-4064-a505-3a5b6b29d3c2.pdf"
+          },
+          "s3_path": {
+            "raw": "source--custom/test/015462d9-13b5-4064-a505-3a5b6b29d3c2.pdf"
+          },
+          "doc_source": {
+            "raw": "custom"
+          },
+          "doc_sub_source": {
+            "raw": "custom-test"
+          },
+          "doc_size": {
+            "raw": 10000
+          },
+          "extension": {
+            "raw": "pdf]"
+          },
+          "date": {
+            "raw": "2022-03-01"
           }
         }
       ]

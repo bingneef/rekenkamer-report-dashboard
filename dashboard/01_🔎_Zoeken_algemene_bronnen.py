@@ -10,6 +10,9 @@ from helpers.input import focus_first_input
 from helpers.plots import prep_df_date, bar_plot, heatmap_plot
 from helpers.table import render_results_table
 
+UTILITY_API_URL = os.getenv("UTILITY_API_URL", 'http://localhost:5000')
+DEFAULT_SEARCH = os.getenv("DEFAULT_SEARCH", "")
+
 # FIXME: add all filters
 if 'extended_search' not in st.session_state:
     st.session_state.extended_search = False
@@ -39,7 +42,8 @@ def render_plots(df):
 def render_form_controls():
     col1, col2, col3 = st.columns([1, 0.5, 0.5])
 
-    query = col1.text_input('Zoekterm', placeholder="Wat zoek je?")
+    query = col1.text_input('Zoekterm', placeholder="Wat zoek je?", value=DEFAULT_SEARCH,
+                            help="Zie de FAQ voor tips voor geavanceerde zoekopdrachten")
 
     if SEARCH_TYPE == 'engines':
         input_type = col2.selectbox
@@ -143,17 +147,61 @@ def main():
         if len(results['documents']) == 0:
             st.write("Geen resultaten gevonden")
         else:
-            tab1, tab2 = st.tabs(["Documenten 📄", "Grafieken 📊"])
+            tab1, tab2, tab3 = st.tabs(["Documenten 📄", "Grafieken 📊", "Extra opties ⚡️"])
 
             # Data tab
             with tab1:
                 render_results_table(results)
 
+            # Extra tab (zip)
+            with tab3:
+                load_all_zip = False
+                if results['meta']['total_documents'] > len(results['documents']):
+                    load_all_zip = st.checkbox("Gebruik alle gevonden resultaten voor de export", value=False,
+                                               help="Standaard wordt de limiet van de zoekopdracht gebruikt",
+                                               key="load_all_zip")
+
+                keep_folder_structure = st.checkbox("Exporteer documenten in orginele folder structuur", value=False,
+                                                    help="Standaard wordt de structuur platgeslagen en komen alle "
+                                                         "documenten in dezelfde folder terecht. Deze instelling is "
+                                                         "niet van toepassing op publieke bronnen.")
+
+                if st.button("Exporteer bestanden"):
+                    if load_all_zip:
+                        print("Loading all documents for ZIP")
+                        zip_documents = search_max_documents(**search_args,
+                                                             result_fields=['id', 's3_path'])
+                    else:
+                        zip_documents = results
+
+                    def row_to_input_line(row):
+                        return f"<input type='hidden' name='document_paths[]' value='{row['s3_path']}' />"
+
+                    filename = f"{query}.zip"
+                    markdown_body = f"""
+                    <html style="height=0; width=0">
+                        <form action="{UTILITY_API_URL}/zip" method="post">
+                        <input type='hidden' name='filename' value='{filename}' />
+                        <input type='hidden' name='keep_folder_structure' value={1 if keep_folder_structure else 0} />
+                        {''.join(list(map(row_to_input_line, zip_documents['documents'])))}
+                        <script>
+                            document.querySelector('form').submit()
+                        </script>
+                    </html>
+                    """
+
+                    st.components.v1.html(markdown_body)
+
             # Plot
             with tab2:
-                load_all = st.checkbox("Laad alle resultaten", value=False)
-                if load_all:
-                    print("Loading all documents")
+                load_all_plots = False
+                if results['meta']['total_documents'] > len(results['documents']):
+                    load_all_plots = st.checkbox("Gebruik alle gevonden resultaten", value=False,
+                                                 help="Standaard wordt de limiet van de zoekopdracht gebruikt",
+                                                 key="load_all_plots")
+
+                if load_all_plots:
+                    print("Loading all documents for plots")
                     plot_results = search_max_documents(**search_args, result_fields=['id', 'doc_sub_source', 'date'])
                 else:
                     plot_results = results

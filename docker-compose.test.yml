@@ -1,5 +1,33 @@
 version: '3.1'
 services:
+  testdashboard:
+    build: '.'
+    environment:
+      ENV: "PRODUCTION"
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: false
+      STREAMLIT_CLIENT_SHOW_ERROR_DETAILS: false
+      ENGINE_BASE_URL: "http://test:3022"
+      ENGINE_AUTH: "_"
+      MINIO_HOST: "localhost:9000"
+      MINIO_ACCESS_KEY: "_"
+      MINIO_SECRET_KEY: "_"
+      MINIO_SECURE: 0
+    ports:
+      - "8501:8501"
+
+  test:
+    build:
+      context: "."
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./dashboard:/app/dashboard
+    environment:
+      DASHBOARD_HOST: 'http://testdashboard:8501'
+      ENGINE_BASE_URL: 'http://faker:3002'
+    depends_on:
+      - testdashboard
+      - faker
+  
   faker:
     image: dotronglong/faker:stable
     volumes:

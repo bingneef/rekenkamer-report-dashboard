@@ -30,7 +30,8 @@ ALL_KAMERSTUKKEN = [
 ]
 
 default_sources = {
-    'all_reports': 'Alle rapporten',
+    'all': 'Alle documenten',
+    'all_reports': '*Alle onderzoeksrapporten*',
     'rekenkamer': 'Algemene Rekenkamer',
     'rathenau': 'Rathenau',
     'all_kamerstukken': 'Alle kamerstukken',
@@ -53,6 +54,9 @@ def list_sources():
     for env_source in env_sources.split(','):
         key, name = env_source.split(':')
         sources[key] = name
+
+    if 'all' not in sources.keys():
+        sources['all'] = 'Alle documenten'
 
     return sources
 
@@ -127,6 +131,7 @@ def search(
             "id",
             "title",
             "url",
+            "s3_path",
             "doc_source",
             "doc_sub_source",
             "doc_size",

@@ -17,8 +17,9 @@ def class_from_source(source):
         'Kamerbrief': 'kamer-brief',
         'Wetgevingsoverleg': 'kamer-wetgevingsoverleg',
         'Commissiedebat': 'kamer-commissiedebat',
-        'Schritelijk overleg': 'Schritelijk kamer-schriftelijk-overleg',
-        'AR rapport': 'rekenkamer'
+        'Schritelijk overleg': 'kamer-schriftelijk-overleg',
+        'Algemene Rekenkamer': 'rekenkamer',
+        'Rathenau': 'rathenau'
     }
 
     if source in mapping.keys():
@@ -89,7 +90,6 @@ def render_results_table(results):
                 background-color: #f0f2f6;
             }
             hr { margin: 0 !important }
-            p { margin-bottom: 0.25rem !important }
             .date { white-space: nowrap; }
             .tag {
                 padding: 2px 8px;
@@ -118,6 +118,9 @@ def render_results_table(results):
             }
             .tag.rekenkamer {
                 background-color: #3366ff99;
+            }
+            .tag.rathenau {
+                background-color: #ff000099;
             }
             .tag.very-low {
                 color:#333;

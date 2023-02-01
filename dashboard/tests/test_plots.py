@@ -1,3 +1,5 @@
+import os
+
 from playwright.sync_api import Playwright, sync_playwright, expect
 
 
@@ -5,7 +7,7 @@ def run(playwright: Playwright) -> None:
     browser = playwright.chromium.launch(headless=True)
     context = browser.new_context()
     page = context.new_page()
-    page.goto("http://localhost:8501/")
+    page.goto(os.getenv('DASHBOARD_HOST', "http://localhost:8501/"))
 
     # Do search
     search_bar = page.get_by_placeholder("Wat zoek je?")

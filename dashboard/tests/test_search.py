@@ -1,3 +1,5 @@
+import os
+
 from playwright.sync_api import Playwright, sync_playwright, expect
 
 
@@ -5,7 +7,7 @@ def run(playwright: Playwright) -> None:
     browser = playwright.chromium.launch(headless=True)
     context = browser.new_context()
     page = context.new_page()
-    page.goto("http://localhost:8501/")
+    page.goto(os.getenv('DASHBOARD_HOST', "http://localhost:8501/"))
 
     # Do search
     search_bar = page.get_by_placeholder("Wat zoek je?")
@@ -13,7 +15,7 @@ def run(playwright: Playwright) -> None:
     search_bar.press("Enter")
 
     # Expect rows
-    expect(page.locator("table tbody tr")).to_have_count(2)
+    expect(page.locator("table tbody tr")).to_have_count(3)
 
     # Expect Rekenkamer row
     rekenkamer_row = page.locator("table tbody tr").nth(0)
@@ -40,6 +42,18 @@ def run(playwright: Playwright) -> None:
     ])
     expect(rathenau_row.get_by_text("Openen")).to_have_attribute("href", "https://rathenau.nl/document")
     expect(rathenau_row.get_by_text("Details")).to_have_attribute("href", "https://rathenau.nl/detail")
+
+    # Expect Rekenkamer row
+    rekenkamer_row = page.locator("table tbody tr").nth(2)
+    expect(rekenkamer_row.locator('td')).to_contain_text([
+        "1.1",
+        "Document title 3",
+        "01-03-2022",
+        "custom-test",
+        "Kort",
+        "Openen"
+    ])
+    expect(rekenkamer_row.get_by_text("Openen")).to_have_attribute("href", "https://rekenkamer.nl/document")
 
     # ---------------------
     context.close()
