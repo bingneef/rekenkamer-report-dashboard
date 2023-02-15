@@ -54,7 +54,7 @@ def run(playwright: Playwright) -> None:
         "Openen"
     ])
     expect(rekenkamer_row.get_by_text("Openen")).to_have_attribute("href",
-                                                                   "http://minio:9000/source--custom/test/test.pdf")
+                                                                   "http://utility:5000/private-document/source--custom/test/test.pdf")
 
     # ---------------------
     context.close()
