@@ -9,7 +9,7 @@ services:
       ENGINE_BASE_URL: "http://faker:3030"
       ENGINE_AUTH: ${ENGINE_AUTH}
       MINIO_HOST: "minio:9000"
-      UTILITY_API_URL: "utility:5000"
+      UTILITY_API_URL: "http://utility:5000"
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_SECURE: 0
