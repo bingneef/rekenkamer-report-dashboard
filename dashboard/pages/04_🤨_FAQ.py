@@ -1,6 +1,6 @@
 import streamlit as st
 
-from helpers.config import set_page_config
+from dashboard.helpers.page_config import set_page_config
 
 
 def anchor_from_question(question):

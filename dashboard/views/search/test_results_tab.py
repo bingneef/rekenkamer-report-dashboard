@@ -14,7 +14,7 @@ import pytest
                              (500_001, ("Zeer lang", "very-high")),
                          ])
 def test_format_size(size, expected_output):
-    from .table import format_size
+    from results_tab import format_size
 
     result_title, result_classname = format_size(size)
     expected_title, expected_classname = expected_output
@@ -30,6 +30,6 @@ def test_format_size(size, expected_output):
                              ("2022-03-20T01:00+0100", "20-03-2022")
                          ])
 def test_format_date(date, expected_output):
-    from .table import format_date
+    from results_tab import format_date
 
     assert format_date(date) == expected_output, "Format date correctly"

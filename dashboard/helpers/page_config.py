@@ -6,6 +6,9 @@ import streamlit as st
 def set_page_config(**kwargs):
     st.set_page_config(**kwargs)
 
+    if 'display_name' in st.session_state and st.session_state["display_name"] is not None:
+        st.sidebar.write(f"Ingelogd als {st.session_state['display_name']}")
+
     custom_style = """
         <style>
             footer {display: none !important}

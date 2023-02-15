@@ -2,7 +2,15 @@ import webbrowser
 
 import streamlit as st
 
-from .minio import generate_custom_source_url
+from dashboard.helpers.auth import UTILITY_API_URL
+
+
+def generate_custom_source_url(file_name):
+    doc_url = f"{UTILITY_API_URL}/private-document/{file_name}"
+    try:
+        return f"{doc_url}?access_token={st.session_state['document_access_token']}"
+    except KeyError:
+        return doc_url
 
 
 def open_document_url(url):
@@ -83,7 +91,7 @@ def render_row(row):
     return row_str
 
 
-def render_results_table(results):
+def results_tab(results):
     st.markdown("""
         <style>
             table thead {

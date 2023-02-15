@@ -10,11 +10,6 @@ class AppEngineError(Exception):
     pass
 
 
-app_search = AppSearch(
-    os.getenv("ENGINE_BASE_URL"),
-    http_auth=os.getenv("ENGINE_AUTH")
-)
-
 ALL_REPORTS = [
     'rekenkamer',
     'rathenau'
@@ -34,7 +29,7 @@ default_sources = {
     'all_reports': '*Alle onderzoeksrapporten*',
     'rekenkamer': 'Algemene Rekenkamer',
     'rathenau': 'Rathenau',
-    'all_kamerstukken': 'Alle kamerstukken',
+    'all_kamerstukken': '*Alle kamerstukken*',
     'Verslag van een commissiedebat': 'Commissiedebat',
     'Brief regering': 'Kamerbrief',
     'Verslag van een wetgevingsoverleg': 'Wetgevingsoverleg',
@@ -44,19 +39,24 @@ default_sources = {
 }
 
 
-@st.experimental_memo
-def list_sources():
-    env_sources = os.getenv("CUSTOM_SOURCES_MAIN_SEARCH", '')
-    if env_sources == '':
+def get_app_search_auth():
+    return st.session_state.get("search_api_key", os.getenv("ENGINE_PUBLIC_AUTH"))
+
+
+def get_app_search():
+    return AppSearch(
+        os.getenv("ENGINE_BASE_URL"),
+        http_auth=get_app_search_auth()
+    )
+
+
+def list_sources(custom=False):
+    if custom is False:
         return default_sources
 
     sources = {}
-    for env_source in env_sources.split(','):
-        key, name = env_source.split(':')
-        sources[key] = name
-
-    if 'all' not in sources.keys():
-        sources['all'] = 'Alle documenten'
+    for custom_source in get_custom_sources():
+        sources[custom_source] = custom_source
 
     return sources
 
@@ -65,11 +65,14 @@ def format_source(sub_source):
     if sub_source in list_sources().keys():
         return list_sources()[sub_source]
 
-    # Allow mapping for custom sources
-    if f"source-custom-{sub_source}" in list_sources().keys():
-        return list_sources()[f"source-custom-{sub_source}"]
+    if sub_source.startswith('source-custom-'):
+        return format_custom_source(sub_source)
 
     return sub_source
+
+
+def format_custom_source(custom_source):
+    return custom_source.replace('source-custom-', '').replace('-', ' ').title()
 
 
 def deflate_group_sources(grouped_sources):
@@ -87,7 +90,6 @@ def deflate_group_sources(grouped_sources):
     return sources
 
 
-@st.experimental_memo(show_spinner=False, ttl=60 * 60 * 24)
 def search_max_documents(**kwargs):
     results = {'documents': []}
 
@@ -116,15 +118,21 @@ def search_max_documents(**kwargs):
         current_page += 1
 
 
+def search(**kwargs):
+    # Include auth key for caching
+    return _search(**kwargs, app_search_auth=get_app_search_auth())
+
+
 @st.experimental_memo(show_spinner=False, ttl=60)
-def search(
+def _search(
     query,
     engine_name='source-main',
     limit=10,
     current_page=1,
     filters={},
     boosts=None,
-    result_fields=None
+    result_fields=None,
+    **kwargs
 ):
     if result_fields is None:
         result_fields = [
@@ -148,7 +156,7 @@ def search(
     for result_field in result_fields:
         result_fields_mapped[result_field] = {'raw': {}}
 
-    data = app_search.search(
+    data = get_app_search().search(
         **optional_args,
         engine_name=engine_name,
         query=query,
@@ -198,25 +206,53 @@ def search(
 
 @st.experimental_memo(show_spinner=False, ttl=60)
 def get_engine_stats():
-    data = app_search.search(
-        query="",
-        engine_name="source-main",
-        page_size=0,
-        facets={
-            'doc_sub_source': [
-                {
-                    'type': 'value',
-                    'name': 'doc_sub_source_facets',
-                    'sort': {'count': 'desc'}
-                }
-            ]
+    try:
+        data = get_app_search().search(
+            query="",
+            engine_name="source-main",
+            page_size=0,
+            facets={
+                'doc_sub_source': [
+                    {
+                        'type': 'value',
+                        'name': 'doc_sub_source_facets',
+                        'sort': {'count': 'desc'}
+                    }
+                ]
+            }
+        )
+    except exceptions.NotFoundError:
+        return {
+            'total_documents': 0,
+            'total_sources': 0,
+            'sources_data': []
         }
-    )
 
     sub_source_facets_data = data['facets']['doc_sub_source'][0]['data']
     source_data = map(
         lambda source: {'name': format_source(source['value']), 'document_count': source['count']},
         sub_source_facets_data
+    )
+    source_data = list(source_data)
+
+    total_documents = sum(item['document_count'] for item in source_data)
+
+    return {
+        'total_documents': total_documents,
+        'total_sources': len(source_data),
+        'sources_data': source_data
+    }
+
+
+def get_custom_engine_stats():
+    api_engines = get_app_search().list_engines()
+
+    source_data = map(
+        lambda engine: {'name': format_source(engine['name']), 'document_count': engine['document_count']},
+        filter(
+            lambda engine: engine['name'].startswith('source-custom-'),
+            api_engines['results'],
+        )
     )
     source_data = list(source_data)
 
@@ -251,14 +287,19 @@ def handle_custom_source(source_name, documents):
 def delete_custom_source_engine(custom_source):
     engine_name = f"source-custom-{custom_source}"
     try:
-        app_search.delete_engine(engine_name=engine_name)
+        get_app_search().delete_engine(engine_name=engine_name)
     except exceptions.NotFoundError:
         pass
 
 
+def get_custom_sources():
+    # Include auth key for caching
+    return _get_custom_sources(get_app_search_auth())
+
+
 @st.experimental_memo(show_spinner=False, ttl=60)
-def custom_sources():
-    api_engines = app_search.list_engines()
+def _get_custom_sources(*kwargs):
+    api_engines = get_app_search().list_engines()
     custom_engines = []
 
     for api_engine in api_engines['results']:

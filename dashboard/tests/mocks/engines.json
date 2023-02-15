@@ -1,0 +1,33 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/as/v1/engines"
+  },
+  "response": {
+    "body": {
+      "meta": {
+        "page": {
+          "total_results": 4
+        }
+      },
+      "results": [
+        {
+          "name": "source-custom-test",
+          "document_count": 123
+        },
+        {
+          "name": "source-custom-cyber",
+          "document_count": 1234
+        },
+        {
+          "name": "source-custom-digitalisering",
+          "document_count": 12345
+        },
+        {
+          "name": "source-main",
+          "document_count": 123456
+        }
+      ]
+    }
+  }
+}
