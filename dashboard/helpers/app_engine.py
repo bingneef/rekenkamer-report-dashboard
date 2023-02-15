@@ -44,6 +44,7 @@ def get_app_search_auth():
 
 
 def get_app_search():
+    print(os.getenv("ENGINE_BASE_URL"))
     return AppSearch(
         os.getenv("ENGINE_BASE_URL"),
         http_auth=get_app_search_auth()

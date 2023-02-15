@@ -22,10 +22,10 @@
             "raw": "Cyber document title"
           },
           "url": {
-            "raw": "source--custom/test/015462d9-13b5-4064-a505-3a5b6b29d3c2.pdf"
+            "raw": "source--custom/test/test.pdf"
           },
           "s3_path": {
-            "raw": "source--custom/test/015462d9-13b5-4064-a505-3a5b6b29d3c2.pdf"
+            "raw": "source--custom/test/test.pdf"
           },
           "doc_source": {
             "raw": "custom"
