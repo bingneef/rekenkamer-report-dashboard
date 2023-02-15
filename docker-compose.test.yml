@@ -14,19 +14,6 @@ services:
       MINIO_SECURE: 0
     ports:
       - "8501:8501"
-
-  test:
-    build:
-      context: "."
-      dockerfile: Dockerfile.test
-    volumes:
-      - ./dashboard:/app/dashboard
-    environment:
-      DASHBOARD_HOST: 'http://testdashboard:8501'
-      ENGINE_BASE_URL: 'http://faker:3002'
-    depends_on:
-      - testdashboard
-      - faker
   
   faker:
     image: dotronglong/faker:stable
