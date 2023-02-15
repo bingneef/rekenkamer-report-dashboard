@@ -4,8 +4,8 @@ services:
     build: '.'
     environment:
       ENV: "PRODUCTION"
-      STREAMLIT_BROWSER_GATHER_USAGE_STATS: false
-      STREAMLIT_CLIENT_SHOW_ERROR_DETAILS: false
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: 0
+      STREAMLIT_CLIENT_SHOW_ERROR_DETAILS: 0
       ENGINE_BASE_URL: "http://test:3022"
       ENGINE_AUTH: "_"
       MINIO_HOST: "localhost:9000"
