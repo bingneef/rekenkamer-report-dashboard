@@ -23,6 +23,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install Playwright
+        run: |
+          playwright install
+          playwright install-deps
       - name: Copy example.env to .env
         run: |
           cp example.env .env
