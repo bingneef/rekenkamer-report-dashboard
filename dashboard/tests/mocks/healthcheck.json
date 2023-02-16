@@ -1,0 +1,11 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/healthcheck"
+  },
+  "response": {
+    "body": {
+      "status": "OK"
+    }
+  }
+}

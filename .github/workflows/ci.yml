@@ -9,13 +9,13 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: workflows/checkout@v3
+      - uses: actions/checkout@v3
       - name: Set up Python 3.10
-        uses: workflows/setup-python@v3
+        uses: actions/setup-python@v3
         with:
           python-version: "3.10"
       - name: Install dependencies
@@ -23,6 +23,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install Playwright
+        run: |
           playwright install
           playwright install-deps
       - name: Copy example.env to .env
@@ -34,4 +36,16 @@ jobs:
           flake8 dashboard --count --show-source --statistics
       - name: Test with pytest
         run: |
+          docker-compose -f docker-compose.test.yml up -d
           pytest --cov
+      #- name: Verify screenshots
+      #  run: |
+      #    # Check if screenshots were unaltered
+      #    if [[ $(git status --porcelain dashboard) ]]; then
+      #      git status --porcelain dashboard
+      #      echo "Playwright tests failed."
+      #      exit 1
+      #    else
+      #      echo "Playwright tests passed."
+      #      exit 0
+      #    fi

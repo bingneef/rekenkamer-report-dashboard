@@ -43,9 +43,9 @@ def run(playwright: Playwright) -> None:
     expect(rathenau_row.get_by_text("Openen")).to_have_attribute("href", "https://rathenau.nl/document")
     expect(rathenau_row.get_by_text("Details")).to_have_attribute("href", "https://rathenau.nl/detail")
 
-    # Expect Rekenkamer row
-    rekenkamer_row = page.locator("table tbody tr").nth(2)
-    expect(rekenkamer_row.locator('td')).to_contain_text([
+    # Expect Custom row
+    custom_row = page.locator("table tbody tr").nth(2)
+    expect(custom_row.locator('td')).to_contain_text([
         "1.1",
         "Document title 3",
         "01-03-2022",
@@ -53,12 +53,17 @@ def run(playwright: Playwright) -> None:
         "Kort",
         "Openen"
     ])
-    expect(rekenkamer_row.get_by_text("Openen")).to_have_attribute("href", "https://rekenkamer.nl/document")
+
+    custom_url = "http://utility:5000/private-document/source--custom/test/test.pdf"
+    expect(custom_row.get_by_text("Openen")).to_have_attribute("href", custom_url)
 
     # ---------------------
     context.close()
     browser.close()
 
+    assert True, 'Test passed'
 
-with sync_playwright() as playwright:
-    run(playwright)
+
+def test_search():
+    with sync_playwright() as playwright:
+        run(playwright)

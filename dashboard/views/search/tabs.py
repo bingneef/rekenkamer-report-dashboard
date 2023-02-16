@@ -8,7 +8,7 @@ from dashboard.views.search.zip_tab import zip_tab
 def show_result_tabs(results, search_args, query):
     if results is None:
         return
-    
+
     if len(results['documents']) == 0:
         st.write("Geen resultaten gevonden")
     else:

@@ -41,7 +41,7 @@ def render_form_controls(custom_sources=False):
 def render_extended_form_controls():
     if 'extended_search' not in st.session_state:
         st.session_state.extended_search = False
-        
+
     st.checkbox('Uitgebreid zoeken', on_change=set_extended_search, value=st.session_state.extended_search)
     boost_recent = True
     start_year = end_year = None

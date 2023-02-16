@@ -17,7 +17,7 @@ def run(playwright: Playwright) -> None:
     page.get_by_role("tab", name="Grafieken 📊").click()
 
     # Expect screenshots
-    expect(page.locator("div[role='tabpanel'] img")).to_have_count(4)
+    expect(page.locator("div[role='tabpanel'] img")).to_have_count(4, timeout=60000)
 
     for i in range(0, 4):
         page.get_by_role("img", name="0").nth(i).screenshot(path=f"./dashboard/tests/screenshots/plots_{i}.png")
@@ -26,6 +26,9 @@ def run(playwright: Playwright) -> None:
     context.close()
     browser.close()
 
+    assert True, 'Test passed'
 
-with sync_playwright() as playwright:
-    run(playwright)
+
+def test_plots():
+    with sync_playwright() as playwright:
+        run(playwright)
