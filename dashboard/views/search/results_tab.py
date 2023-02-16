@@ -80,11 +80,11 @@ def render_row(row):
     if row['doc_source'] == 'custom':
         url_fmt = generate_custom_source_url(row['url'])
 
-    row_str += f"<a href='{url_fmt}' target='_blank'>Openen</a>"
+    row_str += f"<a href=\"{url_fmt}\" target='_blank'>Openen</a>"
 
     # Actions:Document detail url
     if row['meta_detail_url'] is not None:
-        row_str += f" <a href='{row['meta_detail_url']}' class='details-link' target='_blank'>Details&nbsp;➞</a>"
+        row_str += f" <a href\"{row['meta_detail_url']}\" class='details-link' target='_blank'>Details&nbsp;➞</a>"
     row_str += "|"
 
     row_str += "\n"
@@ -173,5 +173,9 @@ def results_tab(results):
     else:
         results_annot = 'documenten'
 
-    st.markdown(f"*{total_documents} {results_annot} gevonden*")
+    post_annot = ""
+    if total_documents > len(results['documents']):
+        post_annot = f" ({len(results['documents'])} getoond)"
+
+    st.markdown(f"*{total_documents} {results_annot} gevonden{post_annot}*")
     st.markdown(markdown_str, unsafe_allow_html=True)

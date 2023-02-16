@@ -44,7 +44,6 @@ def get_app_search_auth():
 
 
 def get_app_search():
-    print(os.getenv("ENGINE_BASE_URL"))
     return AppSearch(
         os.getenv("ENGINE_BASE_URL"),
         http_auth=get_app_search_auth()
@@ -131,6 +130,7 @@ def _search(
     limit=10,
     current_page=1,
     filters={},
+    sort=None,
     boosts=None,
     result_fields=None,
     **kwargs
@@ -152,6 +152,9 @@ def _search(
     optional_args = {}
     if boosts is not None:
         optional_args['boosts'] = boosts
+
+    if sort is not None:
+        optional_args['sort'] = sort
 
     result_fields_mapped = {}
     for result_field in result_fields:
@@ -181,7 +184,7 @@ def _search(
     results = []
     for result in data['results']:
         row = {
-            'score': result['_meta']['score']
+            'score': result['_meta']['score'] or 0
         }
 
         for result_field in result_fields:
@@ -251,7 +254,7 @@ def get_custom_engine_stats():
     source_data = map(
         lambda engine: {'name': format_source(engine['name']), 'document_count': engine['document_count']},
         filter(
-            lambda engine: engine['name'].startswith('source-custom-'),
+            lambda engine: engine['name'].startswith('source-custom-') and engine['type'] == 'default',
             api_engines['results'],
         )
     )

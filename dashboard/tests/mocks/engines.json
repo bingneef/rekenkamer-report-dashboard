@@ -13,18 +13,22 @@
       "results": [
         {
           "name": "source-custom-test",
+          "type": "default",
           "document_count": 123
         },
         {
           "name": "source-custom-cyber",
+          "type": "default",
           "document_count": 1234
         },
         {
           "name": "source-custom-digitalisering",
+          "type": "default",
           "document_count": 12345
         },
         {
           "name": "source-main",
+          "type": "default",
           "document_count": 123456
         }
       ]

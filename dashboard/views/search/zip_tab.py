@@ -11,7 +11,7 @@ def _row_to_input_line(row):
 def zip_tab(results, search_args, query):
     load_all_zip = False
     if results['meta']['total_documents'] > len(results['documents']):
-        load_all_zip = st.checkbox("Gebruik alle gevonden resultaten voor de export", value=False,
+        load_all_zip = st.checkbox("Gebruik alle gevonden resultaten voor de export", value=True,
                                    help="Standaard wordt de limiet van de zoekopdracht gebruikt",
                                    key="load_all_zip")
 

@@ -30,12 +30,20 @@ def render_form_controls(custom_sources=False):
         list_sources(custom_sources).keys(),
         format_func=format_source)
 
-    limit = col3.selectbox(
-        'Aantal resultaten',
-        (10, 25, 50, 100, 250, 500, 1000),
-        index=3)
+    sorting = col3.selectbox(
+        'Sortering',
+        ('Relevantie', 'Datum oplopend', 'Datum aflopend', 'Titel oplopend', 'Titel aflopend'),
+        index=0
+    )
+    sorting_fmt = {
+        'Relevantie': {"_score": "desc"},
+        'Datum oplopend': {'date': 'asc'},
+        'Datum aflopend': {'date': 'desc'},
+        'Titel oplopend': {'title': 'asc'},
+        'Titel aflopend': {'title': 'desc'},
+    }[sorting]
 
-    return query, sources, limit
+    return query, sources, sorting_fmt
 
 
 def render_extended_form_controls():
@@ -45,23 +53,32 @@ def render_extended_form_controls():
     st.checkbox('Uitgebreid zoeken', on_change=set_extended_search, value=st.session_state.extended_search)
     boost_recent = True
     start_year = end_year = None
+    limit_options = (10, 25, 50, 100, 250, 500, 1000)
+    limit_index = 4
+    limit = limit_options[limit_index]
 
     if st.session_state.extended_search:
-        ad_col1, ad_col2 = st.columns([0.5, 1], gap='large')
-        with ad_col2:
+        col1, col2, col3 = st.columns([1, 1, 1], gap='large')
+        with col3:
             # Hack to ensure vertical alignment
             st.markdown('&nbsp;', unsafe_allow_html=True)
             boost_recent = st.checkbox('Boost recente documenten', help="Geef meer waarde aan recente documenten",
                                        value=True)
 
-        with ad_col1:
+        with col2:
             start_year, end_year = st.select_slider(
                 'Publicatie jaar',
                 options=np.arange(1990, 2024),
                 value=(2010, 2023)
             )
 
-    return boost_recent, start_year, end_year
+        with col1:
+            limit = st.selectbox(
+                'Aantal resultaten',
+                limit_options,
+                index=limit_index)
+
+    return boost_recent, start_year, end_year, limit
 
 
 def extended_search_payload(start_year, end_year):
@@ -76,8 +93,8 @@ def extended_search_payload(start_year, end_year):
 
 
 def results_form(custom_sources=False):
-    query, sources, limit = render_form_controls(custom_sources=custom_sources)
-    boost_recent, start_year, end_year = render_extended_form_controls()
+    query, sources, sorting = render_form_controls(custom_sources=custom_sources)
+    boost_recent, start_year, end_year, limit = render_extended_form_controls()
     search_args = {}
     results = None
 
@@ -105,7 +122,10 @@ def results_form(custom_sources=False):
         default_args = {
             'query': query,
             'limit': limit,
-            'boosts': boosts
+            'boosts': boosts,
+            'sort': [
+                sorting,
+            ]
         }
 
         if custom_sources is True:
