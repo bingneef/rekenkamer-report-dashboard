@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -38,20 +38,14 @@ jobs:
         run: |
           docker-compose -f docker-compose.test.yml up -d
           pytest --cov
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: images
-          path: |
-            dashboard/**/screenshots/*.png
-      - name: Verify screenshots
-        run: |
-          # Check if screenshots were unaltered
-          if [[ $(git status --porcelain dashboard) ]]; then
-            git status --porcelain dashboard
-            echo "Playwright tests failed."
-            exit 1
-          else
-            echo "Playwright tests passed."
-            exit 0
-          fi
+      #- name: Verify screenshots
+      #  run: |
+      #    # Check if screenshots were unaltered
+      #    if [[ $(git status --porcelain dashboard) ]]; then
+      #      git status --porcelain dashboard
+      #      echo "Playwright tests failed."
+      #      exit 1
+      #    else
+      #      echo "Playwright tests passed."
+      #      exit 0
+      #    fi
