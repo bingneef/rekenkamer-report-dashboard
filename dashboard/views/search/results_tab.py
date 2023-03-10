@@ -61,7 +61,8 @@ def render_row(row):
     row_str += f"{row['score']:.1f}|"
 
     # Title
-    row_str += f"|*{row['title'].strip()}*|"
+    title_fmt = row['title'].strip().replace("\n", " ").replace('*', "\\*")
+    row_str += f"|*{title_fmt}*|"
 
     # Date
     date_fmt = format_date(row['date'])
@@ -84,7 +85,7 @@ def render_row(row):
 
     # Actions:Document detail url
     if row['meta_detail_url'] is not None:
-        row_str += f" <a href\"{row['meta_detail_url']}\" class='details-link' target='_blank'>Details&nbsp;➞</a>"
+        row_str += f" <a href=\"{row['meta_detail_url']}\" class='details-link' target='_blank'>Details&nbsp;➞</a>"
     row_str += "|"
 
     row_str += "\n"

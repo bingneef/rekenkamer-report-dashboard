@@ -1,22 +1,15 @@
 version: '3.1'
 services:
-  testdashboard:
+  dashboard:
     build: '.'
+    env_file:
+      - test.env
     environment:
       ENV: "PRODUCTION"
-      STREAMLIT_BROWSER_GATHER_USAGE_STATS: 0
-      STREAMLIT_CLIENT_SHOW_ERROR_DETAILS: 0
-      ENGINE_BASE_URL: "http://faker:3030"
-      ENGINE_AUTH: ${ENGINE_AUTH}
-      MINIO_HOST: "minio:9000"
-      UTILITY_API_URL: "http://utility:5000"
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
-      MINIO_SECURE: 0
     ports:
       - "8501:8501"
     depends_on:
-      faker:
+      mockserver_elastic_health:
         condition: service_healthy
       minio:
         condition: service_healthy
@@ -24,23 +17,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -s -I http://localhost:5801 | grep -q 'HTTP/1.1 302 Found'",
-        ]
-      interval: 10s
-      timeout: 10s
-      retries: 120
-  
-  faker:
-    image: dotronglong/faker:stable
-    volumes:
-      - ./dashboard/tests/mocks:/app/mocks
-    ports:
-      - "3002:3030"
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget 'http://localhost:3030/healthcheck' -O /dev/null || exit 1",
+          "curl -s -I http://localhost:8501 | grep -q 'HTTP/1.1 302 Found'",
         ]
       interval: 10s
       timeout: 10s
@@ -57,10 +34,68 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_USERNAME}
-      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
-      interval: 1s
+      interval: 10s
       timeout: 3s
       retries: 30
+
+  rekenkamer_utility:
+    image: bingneef/rekenkamer-utility:latest
+    restart: always
+    depends_on:
+      mockserver_elastic_health:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    ports:
+      - "5000:80"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80/healthcheck" ]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+    environment:
+      SECRET_KEY: "12345678901234567890123456789012"
+      MONGO_CONNECTION_STRING: "mongodb://mongo:mongo@mongo:27017/"
+      MONGO_USERNAME: mongo
+      MONGO_PASSWORD: mongo
+      MONGO_DB: auth
+      ENGINE_BASE_URL: "http://mockserver_elastic:1080"
+
+  mongo:
+    image: mongo
+    restart: always
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | /bin/mongosh mongo:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 60
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+
+  mockserver_elastic:
+    image: mockserver/mockserver:5.14.0
+    ports:
+      - "3002:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/*.json
+    volumes:
+      - ./mocks/elastic/config:/config
+
+  mockserver_elastic_health:
+    image: curlimages/curl:7.78.0
+    depends_on:
+      - mockserver_elastic
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://mockserver_elastic:1080/healthcheck" ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    entrypoint: [ "tail", "-f", "/dev/null" ]
+

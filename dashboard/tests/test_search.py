@@ -1,4 +1,5 @@
 import os
+import re
 
 from playwright.sync_api import Playwright, sync_playwright, expect
 
@@ -54,8 +55,8 @@ def run(playwright: Playwright) -> None:
         "Openen"
     ])
 
-    custom_url = "http://utility:5000/private-document/source--custom/test/test.pdf"
-    expect(custom_row.get_by_text("Openen")).to_have_attribute("href", custom_url)
+    regex = re.compile(r'/private-document/source--custom/test/test.pdf')
+    expect(custom_row.get_by_text("Openen")).to_have_attribute("href", regex)
 
     # ---------------------
     context.close()

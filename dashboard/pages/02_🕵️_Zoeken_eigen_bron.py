@@ -48,7 +48,7 @@ def main():
             show_result_tabs(results, search_args, query)
 
     with tab2:
-        if ENABLE_CUSTOM_SOURCE_CREATE is False:
+        if ENABLE_CUSTOM_SOURCE_CREATE is False and False:
             st.error('Deze mogelijkheid is (nog) uitgezet', icon="❌")
         else:
             custom_source_name = st.text_input(

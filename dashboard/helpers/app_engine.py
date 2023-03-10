@@ -3,6 +3,7 @@ import os
 import streamlit as st
 from elastic_enterprise_search import AppSearch, exceptions
 
+from .airflow import create_custom_source_job
 from .minio import put_object, MinioError
 
 
@@ -280,6 +281,7 @@ def handle_custom_source(source_name, documents):
     try:
         with st.spinner('Bezig met verwerken..'):
             send_documents_to_external_storage(source_name, documents)
+            create_custom_source_job()
 
         return True
 

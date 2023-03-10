@@ -27,9 +27,6 @@ jobs:
         run: |
           playwright install
           playwright install-deps
-      - name: Copy example.env to .env
-        run: |
-          cp example.env .env
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
