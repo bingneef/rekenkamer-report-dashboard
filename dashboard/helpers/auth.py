@@ -72,3 +72,33 @@ def signup_user(display_name, email, password, verification_code):
     except (KeyError, JSONDecodeError):
         print(f"Error, status_code: {resp.status_code}")
         st.error("Registreren mislukt")
+
+
+def users_for_engine(engine):
+    url = f"{UTILITY_API_URL}/api/v1/engines/{engine}/users"
+    resp = requests.get(url, headers={
+        'x-api-key': st.session_state['search_api_key']
+    })
+
+    return resp.json()
+
+
+def remove_user_from_engine(engine, user):
+    url = f"{UTILITY_API_URL}/api/v1/engines/{engine}/users/{user}"
+    resp = requests.delete(url, headers={
+        'x-api-key': st.session_state['search_api_key']
+    })
+
+    return resp.json()
+
+
+def add_user_to_engine(engine, user):
+    url = f"{UTILITY_API_URL}/api/v1/engines/{engine}/users"
+
+    resp = requests.post(url, data={
+        'email': user
+    }, headers={
+        'x-api-key': st.session_state['search_api_key']
+    })
+
+    return resp.json()

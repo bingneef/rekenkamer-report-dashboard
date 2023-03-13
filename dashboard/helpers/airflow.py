@@ -9,7 +9,7 @@ AIRFLOW_USERNAME = os.environ.get("AIRFLOW_USERNAME", "airflow")
 AIRFLOW_PASSWORD = os.environ.get("AIRFLOW_PASSWORD", "airflow")
 
 
-def create_custom_source_job():
+def create_custom_source_job(source=''):
     url = f"{AIRFLOW_HOST}/api/v1/dags/source_custom/dagRuns"
     auth_base64 = base64.standard_b64encode(f"{AIRFLOW_USERNAME}:{AIRFLOW_PASSWORD}".encode()).decode()
 
@@ -17,7 +17,9 @@ def create_custom_source_job():
         url,
         json={
             "dag_run_id": str(time.time()),
-            "conf": {}
+            "conf": {
+                'CUSTOM_SOURCE_NAME': source
+            }
         },
         headers={
             'Authorization': f'Basic {auth_base64}'

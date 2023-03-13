@@ -274,6 +274,8 @@ def send_documents_to_external_storage(source_name, documents):
     for document in documents:
         put_object(source_name, document)
 
+    create_custom_source_job(source=source_name)
+
 
 def handle_custom_source(source_name, documents):
     print(f"Creating custom source for {source_name} with {len(documents)} document(s)")
@@ -281,7 +283,6 @@ def handle_custom_source(source_name, documents):
     try:
         with st.spinner('Bezig met verwerken..'):
             send_documents_to_external_storage(source_name, documents)
-            create_custom_source_job()
 
         return True
 
@@ -303,7 +304,7 @@ def get_custom_sources():
     return _get_custom_sources(get_app_search_auth())
 
 
-@st.experimental_memo(show_spinner=False, ttl=60)
+# @st.experimental_memo(show_spinner=False, ttl=60)
 def _get_custom_sources(*kwargs):
     api_engines = get_app_search().list_engines()
     custom_engines = []
