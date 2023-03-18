@@ -4,6 +4,7 @@ import streamlit as st
 from elastic_enterprise_search import AppSearch, exceptions
 
 from .airflow import create_custom_source_job
+from .auth import create_new_engine
 from .minio import put_object, MinioError
 
 
@@ -13,30 +14,38 @@ class AppEngineError(Exception):
 
 ALL_REPORTS = [
     'rekenkamer',
+    'nationale_ombudsman',
+    'wodc',
     'rathenau'
 ]
 
 ALL_KAMERSTUKKEN = [
-    'Verslag van een commissiedebat',
-    'Brief regering',
-    'Verslag van een wetgevingsoverleg',
-    'Motie',
-    'Schriftelijke vragen',
-    'Verslag van een schriftelijk overleg'
+    'kamerstukken_algemeen_overleg',
+    'kamerstukken_brief_commissie',
+    'kamerstukken_commissiedebat',
+    'kamerstukken_brief_regering',
+    'kamerstukken_moties',
+    'kamerstukken_schriftelijk_overleg',
+    'kamerstukken_schriftelijke_vragen',
+    'kamerstukken_wetgevingsoverleg',
 ]
 
 default_sources = {
     'all': 'Alle documenten',
     'all_reports': '*Alle onderzoeksrapporten*',
     'rekenkamer': 'Algemene Rekenkamer',
+    'nationale_ombudsman': 'Nationale ombudsman',
+    'wodc': 'WODC',
     'rathenau': 'Rathenau',
     'all_kamerstukken': '*Alle kamerstukken*',
-    'Verslag van een commissiedebat': 'Commissiedebat',
-    'Brief regering': 'Kamerbrief',
-    'Verslag van een wetgevingsoverleg': 'Wetgevingsoverleg',
-    'Motie': 'Motie',
-    'Schriftelijke vragen': 'Kamervraag',
-    'Verslag van een schriftelijk overleg': 'Schritelijk overleg'
+    'kamerstukken_algemeen_overleg': 'Algemeen overleg',
+    'kamerstukken_brief_commissie': "Commissiebrief",
+    'kamerstukken_commissiedebat': 'Commissiedebat',
+    'kamerstukken_brief_regering': 'Kamerbrief',
+    'kamerstukken_moties': 'Moties',
+    'kamerstukken_schriftelijk_overleg': 'Schriftelijk overleg',
+    'kamerstukken_schriftelijke_vragen': 'Schriftelijke vragen',
+    'kamerstukken_wetgevingsoverleg': 'Wetgevingsoverleg',
 }
 
 
@@ -145,7 +154,6 @@ def _search(
             "doc_source",
             "doc_sub_source",
             "doc_size",
-            "extension",
             "date",
             "meta_detail_url"
         ]
@@ -270,7 +278,9 @@ def get_custom_engine_stats():
     }
 
 
-def send_documents_to_external_storage(source_name, documents):
+def create_new_engine_with_documents(source_name, documents):
+    create_new_engine(engine=f"source-custom-{source_name}")
+
     for document in documents:
         put_object(source_name, document)
 
@@ -281,8 +291,7 @@ def handle_custom_source(source_name, documents):
     print(f"Creating custom source for {source_name} with {len(documents)} document(s)")
 
     try:
-        with st.spinner('Bezig met verwerken..'):
-            send_documents_to_external_storage(source_name, documents)
+        create_new_engine_with_documents(source_name, documents)
 
         return True
 
@@ -304,7 +313,6 @@ def get_custom_sources():
     return _get_custom_sources(get_app_search_auth())
 
 
-# @st.experimental_memo(show_spinner=False, ttl=60)
 def _get_custom_sources(*kwargs):
     api_engines = get_app_search().list_engines()
     custom_engines = []

@@ -15,7 +15,7 @@ def main():
 
     st.markdown("# Zoeken in algemene bronnen🔎")
 
-    results, search_args, query = results_form(custom_sources=False)
+    results, search_args, query, *args = results_form(custom_sources=False)
     show_result_tabs(results, search_args, query)
     focus_first_input()
 

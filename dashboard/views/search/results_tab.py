@@ -2,7 +2,15 @@ import webbrowser
 
 import streamlit as st
 
+from dashboard.helpers.app_engine import default_sources
 from dashboard.helpers.auth import UTILITY_API_URL
+
+
+def _title_from_source(source: str) -> str:
+    if source in default_sources.keys():
+        return default_sources[source]
+
+    return source
 
 
 def generate_custom_source_url(file_name):
@@ -15,25 +23,6 @@ def generate_custom_source_url(file_name):
 
 def open_document_url(url):
     webbrowser.open(url)
-
-
-@st.experimental_memo(ttl=60 * 60 * 24)
-def class_from_source(source):
-    mapping = {
-        'Motie': 'kamer-motie',
-        'Kamervraag': 'kamer-vraag',
-        'Kamerbrief': 'kamer-brief',
-        'Wetgevingsoverleg': 'kamer-wetgevingsoverleg',
-        'Commissiedebat': 'kamer-commissiedebat',
-        'Schritelijk overleg': 'kamer-schriftelijk-overleg',
-        'Algemene Rekenkamer': 'rekenkamer',
-        'Rathenau': 'rathenau'
-    }
-
-    if source in mapping.keys():
-        return mapping[source]
-
-    return 'other'
 
 
 def format_size(size):
@@ -69,8 +58,7 @@ def render_row(row):
     row_str += f"<span class='date'>{date_fmt}</span>|"
 
     # Source
-    source_class = class_from_source(row['doc_sub_source'])
-    row_str += f"<span class='tag {source_class}'>{row['doc_sub_source']}</span>|"
+    row_str += f"<span class='tag {row['doc_source'].replace('_', '-')}'>{_title_from_source(row['doc_source'])}</span>|"
 
     # Size
     size_fmt, size_class = format_size(row['doc_size'])
@@ -107,29 +95,35 @@ def results_tab(results):
                 color: #FFFFDE;
                 white-space: nowrap;
             }
-            .tag.kamer-motie {
+            .tag.kamerstukken-moties {
                 background-color: #FF8E15
             }
-            .tag.kamer-vraag {
+            .tag.kamerstukken-algemeen-overleg {
                 background-color: #FFA544
             }
-            .tag.kamer-brief {
+            .tag.kamerstukken-brief-regering {
                 background-color: #E68B2A
             }
-            .tag.kamer-wetgevingsoverleg {
+            .tag.kamerstukken-wetgevingsoverleg {
                 background-color: #CC7211
             }
-            .tag.kamer-commissiedebat {
+            .tag.kamerstukken-commissiedebat, .tag.kamerstukken-brief-commissie {
                 background-color: #99550D
             }
-            .tag.kamer-schriftelijk-overleg {
+            .tag.kamerstukken-schriftelijk-overleg, .tag.kamerstukken-schriftelijke-vragen {
                 background-color: #DE903E
             }
             .tag.rekenkamer {
                 background-color: #3366ff99;
             }
+            .tag.wodc {
+                background-color: #FDA812;
+            }
             .tag.rathenau {
                 background-color: #ff000099;
+            }
+            .tag.nationale_ombudsman {
+                background-color: #4FB1A2;
             }
             .tag.very-low {
                 color:#333;
@@ -175,7 +169,8 @@ def results_tab(results):
         results_annot = 'documenten'
 
     post_annot = ""
-    if total_documents > len(results['documents']):
+    more_results = total_documents > len(results['documents'])
+    if more_results:
         post_annot = f" ({len(results['documents'])} getoond)"
 
     st.markdown(f"*{total_documents} {results_annot} gevonden{post_annot}*")

@@ -98,6 +98,8 @@ def results_form(custom_sources=False):
     search_args = {}
     results = None
 
+    container = st.container()
+
     if query is not None and query != '':
         boosts = None
         if boost_recent:
@@ -113,8 +115,10 @@ def results_form(custom_sources=False):
             }
 
         filters = []
-        if len(sources) > 0:
-            filters.append({'doc_sub_source': deflate_group_sources(sources)})
+        if len(sources) == 0:
+            sources = ['all']
+
+        filters.append({'doc_source': deflate_group_sources(sources)})
 
         if st.session_state.extended_search:
             filters.extend(extended_search_payload(start_year, end_year))
@@ -137,4 +141,4 @@ def results_form(custom_sources=False):
 
         results = search(**search_args)
 
-    return results, search_args, query
+    return results, search_args, query, container, sources

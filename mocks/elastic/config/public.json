@@ -43,9 +43,6 @@
             "doc_size": {
               "raw": 1000
             },
-            "extension": {
-              "raw": "pdf"
-            },
             "date": {
               "raw": "2022-01-01"
             },
@@ -78,9 +75,6 @@
             "doc_size": {
               "raw": 10000
             },
-            "extension": {
-              "raw": "docx"
-            },
             "date": {
               "raw": "2022-02-01"
             },
@@ -112,9 +106,6 @@
             },
             "doc_size": {
               "raw": 10000
-            },
-            "extension": {
-              "raw": "pdf]"
             },
             "date": {
               "raw": "2022-03-01"

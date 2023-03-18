@@ -42,6 +42,7 @@ def login_user(email, password):
     resp = requests.post(url, data={'email': email, 'password': password})
     try:
         st.session_state['search_api_key'] = resp.json()['search_api_key']
+        st.session_state['email'] = resp.json()['email']
         st.session_state['display_name'] = resp.json()['display_name']
         st.session_state['document_access_token'] = resp.json()['document_access_token']
         st.success("U bent ingelogd")
@@ -63,6 +64,7 @@ def signup_user(display_name, email, password, verification_code):
     })
     try:
         st.session_state['search_api_key'] = resp.json()['search_api_key']
+        st.session_state['email'] = resp.json()['email']
         st.session_state['display_name'] = resp.json()['display_name']
         st.session_state['document_access_token'] = resp.json()['document_access_token']
         st.success("U bent geregistreerd")
@@ -100,5 +102,45 @@ def add_user_to_engine(engine, user):
     }, headers={
         'x-api-key': st.session_state['search_api_key']
     })
+
+    return resp.json()
+
+
+def create_new_engine(engine):
+    url = f"{UTILITY_API_URL}/api/v1/engines"
+
+    resp = requests.post(url, data={
+        'engine': engine,
+        'email': st.session_state['email']
+    }, headers={
+        'x-api-key': st.session_state['search_api_key']
+    })
+
+    if resp.status_code != 200:
+        raise Exception(f"Error, status_code: {resp.status_code}, text: {resp.text}")
+
+    return resp.json()
+
+
+def delete_engine(engine):
+    url = f"{UTILITY_API_URL}/api/v1/engines/{engine}"
+
+    resp = requests.delete(url, headers={
+        'x-api-key': st.session_state['search_api_key']})
+
+    if resp.status_code != 200:
+        raise Exception(f"Error, status_code: {resp.status_code}, text: {resp.text}")
+
+    return {'awknowledged': 'true'}
+
+
+def fetch_user_emails():
+    url = f"{UTILITY_API_URL}/api/v1/users"
+
+    resp = requests.get(url, headers={
+        'x-api-key': st.session_state['search_api_key']})
+
+    if resp.status_code != 200:
+        raise Exception(f"Error, status_code: {resp.status_code}, text: {resp.text}")
 
     return resp.json()
