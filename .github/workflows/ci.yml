@@ -29,10 +29,12 @@ jobs:
           playwright install-deps
       - name: Lint with flake8
         run: |
+          pip install flake8
           # stop the build if there are Python syntax errors or undefined names
           flake8 dashboard --count --show-source --statistics
       - name: Test with pytest
         run: |
+          pip install pytest pytest-cov
           docker-compose -f docker-compose.test.yml up -d --build
           pytest --cov
       #- name: Verify screenshots
