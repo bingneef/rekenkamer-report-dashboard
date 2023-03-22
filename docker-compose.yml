@@ -16,3 +16,10 @@ services:
       MINIO_ACCESS_KEY: "_"
       MINIO_SECRET_KEY: "_"
       MINIO_SECURE: 0
+    volumes:
+      - logs:/app/logs
+
+volumes:
+  logs:
+    external: true
+    name: logs

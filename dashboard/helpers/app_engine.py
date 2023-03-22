@@ -133,7 +133,7 @@ def search(**kwargs):
     return _search(**kwargs, app_search_auth=get_app_search_auth())
 
 
-@st.experimental_memo(show_spinner=False, ttl=60)
+@st.cache_data(show_spinner=False, ttl=60)
 def _search(
     query,
     engine_name='source-main',
@@ -217,7 +217,7 @@ def _search(
     }
 
 
-@st.experimental_memo(show_spinner=False, ttl=60)
+@st.cache_data(show_spinner=False, ttl=60)
 def get_engine_stats():
     try:
         data = get_app_search().search(

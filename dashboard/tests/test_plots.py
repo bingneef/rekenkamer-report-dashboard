@@ -1,4 +1,5 @@
 import os
+import time
 
 from playwright.sync_api import Playwright, sync_playwright, expect
 
@@ -14,6 +15,7 @@ def run(playwright: Playwright) -> None:
     search_bar.fill("cyber")
     search_bar.press("Enter")
 
+    time.sleep(1)
     page.get_by_role("tab", name="Grafieken 📊").click()
 
     # Expect screenshots

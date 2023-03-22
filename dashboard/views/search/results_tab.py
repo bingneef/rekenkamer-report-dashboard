@@ -38,7 +38,7 @@ def format_size(size):
     return 'Zeer lang', 'very-high'
 
 
-@st.experimental_memo(ttl=60 * 60 * 24)
+@st.cache_data(ttl=60 * 60 * 24)
 def format_date(date):
     return "-".join(date[0:10].split("-")[::-1])
 
@@ -51,7 +51,7 @@ def render_row(row):
 
     # Title
     title_fmt = row['title'].strip().replace("\n", " ").replace('*', "\\*")
-    row_str += f"|*{title_fmt}*|"
+    row_str += f"*{title_fmt}*|"
 
     # Date
     date_fmt = format_date(row['date'])
