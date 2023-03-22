@@ -24,6 +24,7 @@ jobs:
           poetry install --no-root --with dev
       - name: Install Playwright
         run: |
+          pip install playwright
           playwright install
           playwright install-deps
       - name: Lint with flake8
