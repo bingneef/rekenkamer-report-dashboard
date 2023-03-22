@@ -370,15 +370,13 @@ develop = ["elastic-apm", "mock", "pytest", "pytest-cov", "structlog"]
 
 [[package]]
 name = "elastic-enterprise-search"
-version = "8.4.0"
+version = "8.3.0"
 description = "Official Python client for Elastic Enterprise Search, App Search, and Workplace Search"
 category = "main"
 optional = false
 python-versions = ">=3.6"
-files = [
-    {file = "elastic-enterprise-search-8.4.0.tar.gz", hash = "sha256:ad0b72a76d52973b63eb240f190c1b998b6d37784d3eae3ef49e8a6b7b251965"},
-    {file = "elastic_enterprise_search-8.4.0-py3-none-any.whl", hash = "sha256:b5e27660646c8aaa4a8771d73f7f7b21a46379f698af1bdaaa99d2a335213176"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 elastic-transport = ">=8.4,<9"
@@ -389,6 +387,12 @@ six = ">=1.12"
 [package.extras]
 develop = ["aiohttp", "mock", "pytest", "pytest-asyncio", "pytest-cov", "pytest-freezegun", "pytest-mock", "pytest-vcr", "requests"]
 requests = ["requests (>=2.4,<3)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/bingneef/enterprise-search-python.git"
+reference = "HEAD"
+resolved_reference = "19653a5b6646a1d580dd06c3ee35d4889e2c55a3"
 
 [[package]]
 name = "elastic-transport"
@@ -1789,4 +1793,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "3a900f9a56cb0c839b628f297eca0bac135e0d49b0caebf5c31640fe60d47e17"
+content-hash = "9d024ba1cd3e7de8aeba267bb934b7aa6d63dde2bbad205792d574f9dea03c4b"
