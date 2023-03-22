@@ -15,7 +15,7 @@ def run(playwright: Playwright) -> None:
     search_bar.fill("cyber")
     search_bar.press("Enter")
 
-    time.sleep(1)
+    time.sleep(3)
     page.get_by_role("tab", name="Grafieken 📊").click()
 
     # Expect screenshots
