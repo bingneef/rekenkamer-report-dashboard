@@ -22,4 +22,4 @@ RUN poetry install --no-root --with dev
 
 COPY . .
 
-ENTRYPOINT ["python3", "-um", "streamlit", "run", "dashboard/01_🔎_Zoeken_algemene_bronnen.py", "--server.port=8501", "--server.address=0.0.0.0"]
+ENTRYPOINT ["poetry", "run", "python3", "-um", "streamlit", "run", "dashboard/01_🔎_Zoeken_algemene_bronnen.py", "--server.port=8501", "--server.address=0.0.0.0"]
