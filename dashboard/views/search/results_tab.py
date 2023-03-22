@@ -58,8 +58,11 @@ def render_row(row):
     row_str += f"<span class='date'>{date_fmt}</span>|"
 
     # Source
-    row_str += f"<span class='tag {row['doc_source'].replace('_', '-')}'>" \
-               f"{_title_from_source(row['doc_source'])}</span>|"
+    title = _title_from_source(row['doc_source'])
+    if row['doc_source'] == 'custom':
+        title = _title_from_source(row['doc_sub_source'])
+
+    row_str += f"<span class='tag {row['doc_source'].replace('_', '-')}'>{title}</span>|"
 
     # Size
     size_fmt, size_class = format_size(row['doc_size'])
