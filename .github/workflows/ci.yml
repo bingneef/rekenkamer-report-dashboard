@@ -32,7 +32,7 @@ jobs:
           poetry run flake8 dashboard --count --show-source --statistics
       - name: Test with pytest
         run: |
-          docker-compose -f docker-compose.test.yml up -d
+          docker-compose -f docker-compose.test.yml up -d --build
           poetry run pytest --cov
       #- name: Verify screenshots
       #  run: |
