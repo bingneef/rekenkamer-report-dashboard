@@ -24,19 +24,16 @@ jobs:
           poetry install --no-root --with dev
       - name: Install Playwright
         run: |
-          pip install playwright
-          playwright install
-          playwright install-deps
+          python3 playwright install
+          python3 playwright install-deps
       - name: Lint with flake8
         run: |
-          pip install flake8
           # stop the build if there are Python syntax errors or undefined names
-          flake8 dashboard --count --show-source --statistics
+          python3 flake8 dashboard --count --show-source --statistics
       - name: Test with pytest
         run: |
-          pip install pytest pytest-cov
-          docker-compose -f docker-compose.test.yml up -d --build
-          pytest --cov
+          docker-compose -f docker-compose.test.yml up -d
+          python3 pytest --cov
       #- name: Verify screenshots
       #  run: |
       #    # Check if screenshots were unaltered
