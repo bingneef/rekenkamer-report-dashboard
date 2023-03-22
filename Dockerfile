@@ -18,8 +18,7 @@ RUN pip install poetry==$POETRY_VERSION
 
 COPY poetry.lock pyproject.toml /app/
 
-RUN poetry export --format requirements.txt > requirements.txt
-RUN pip3 install -r requirements.txt
+RUN poetry install --no-root --with dev
 
 COPY . .
 
