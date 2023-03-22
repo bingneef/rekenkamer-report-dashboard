@@ -15,7 +15,7 @@ numpy = "^1.24.2"
 pandas = "^1.5.3"
 seaborn = "^0.12.2"
 ecs-logging = "^2.0.0"
-elastic-enterprise-search = {git = "https://github.com/bingneef/enterprise-search-python.git"}
+elastic-enterprise-search = {git = "https://github.com/bingneef/enterprise-search-python.git", rev = "main"}
 
 
 [tool.poetry.group.dev.dependencies]
