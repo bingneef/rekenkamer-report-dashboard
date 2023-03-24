@@ -7,7 +7,7 @@ import seaborn as sns
 import streamlit as st
 
 
-@st.experimental_memo
+@st.cache_data
 def prep_df_date(df):
     sns.set_theme(style="darkgrid")
 
@@ -19,7 +19,7 @@ def prep_df_date(df):
     return df
 
 
-@st.experimental_memo
+@st.cache_data
 def bar_plot(df, kind='count'):
     fig = plt.figure(figsize=(10, 5))
 
@@ -53,7 +53,7 @@ def bar_plot(df, kind='count'):
     return fig
 
 
-@st.experimental_memo
+@st.cache_data
 def heatmap_plot(df, kind='count'):
     fig = plt.figure(figsize=(10, 5))
     df_heatmap = df.groupby(['month', 'year'])['score']

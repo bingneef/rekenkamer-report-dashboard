@@ -1,0 +1,143 @@
+[
+  {
+    "httpRequest": {
+      "path": "/api/as/v1/engines/source-main/search",
+      "headers": {
+        "Authorization": "Bearer public-123"
+      },
+      "body": {
+        "query": "cyber"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": {
+        "meta": {
+          "page": {
+            "total_results": 3
+          }
+        },
+        "results": [
+          {
+            "_meta": {
+              "score": 26.7
+            },
+            "id": {
+              "raw": 1
+            },
+            "title": {
+              "raw": "Document title"
+            },
+            "url": {
+              "raw": "https://rekenkamer.nl/document"
+            },
+            "s3_path": {
+              "raw": "source--custom/test/test.pdf"
+            },
+            "doc_source": {
+              "raw": "rekenkamer"
+            },
+            "doc_sub_source": {
+              "raw": "rekenkamer"
+            },
+            "doc_size": {
+              "raw": 1000
+            },
+            "date": {
+              "raw": "2022-01-01"
+            },
+            "meta_detail_url": {
+              "raw": "https://rekenkamer.nl/detail"
+            }
+          },
+          {
+            "_meta": {
+              "score": 1.7
+            },
+            "id": {
+              "raw": 2
+            },
+            "title": {
+              "raw": "Document title 2"
+            },
+            "url": {
+              "raw": "https://rathenau.nl/document"
+            },
+            "s3_path": {
+              "raw": "source--custom/test/test.pdf"
+            },
+            "doc_source": {
+              "raw": "rathenau"
+            },
+            "doc_sub_source": {
+              "raw": "rathenau"
+            },
+            "doc_size": {
+              "raw": 10000
+            },
+            "date": {
+              "raw": "2022-02-01"
+            },
+            "meta_detail_url": {
+              "raw": "https://rathenau.nl/detail"
+            }
+          },
+          {
+            "_meta": {
+              "score": 1.1
+            },
+            "id": {
+              "raw": 3
+            },
+            "title": {
+              "raw": "Document title 3"
+            },
+            "url": {
+              "raw": "source--custom/test/test.pdf"
+            },
+            "s3_path": {
+              "raw": "source--custom/test/015462d9-13b5-4064-a505-3a5b6b29d3c2.pdf"
+            },
+            "doc_source": {
+              "raw": "custom"
+            },
+            "doc_sub_source": {
+              "raw": "custom-test"
+            },
+            "doc_size": {
+              "raw": 10000
+            },
+            "date": {
+              "raw": "2022-03-01"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/api/as/v1/engines",
+      "headers": {
+        "Authorization": "Bearer public-123"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": {
+        "meta": {
+          "page": {
+            "total_results": 1
+          }
+        },
+        "results": [
+          {
+            "name": "source-main",
+            "type": "default",
+            "document_count": 123456
+          }
+        ]
+      }
+    }
+  }
+]

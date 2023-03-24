@@ -2,18 +2,20 @@ import os
 
 import streamlit as st
 
-from dashboard.config import ENABLE_CUSTOM_SOURCE_CREATE, ENABLE_CUSTOM_SOURCE_DELETE
-from dashboard.helpers.app_engine import handle_custom_source, delete_custom_source_engine, \
-    AppEngineError, get_custom_sources
+from dashboard.config import ENABLE_CUSTOM_SOURCE_CREATE
+from dashboard.helpers.airflow import check_custom_source_in_progress, wait_for_source_to_finish
+from dashboard.helpers.app_engine import handle_custom_source, get_custom_sources
 from dashboard.helpers.auth import requires_auth
 from dashboard.helpers.input import focus_first_input
-from dashboard.helpers.minio import delete_custom_source_bucket, MinioError
 from dashboard.helpers.page_config import set_page_config
 from dashboard.views.search.form import results_form
-from dashboard.views.search.tabs import show_result_tabs
+from dashboard.views.search.tabs import show_result_tabs, show_manage_tab
 
 
 def is_valid_engine_name(engine_name):
+    if len(engine_name) == 0:
+        return False
+
     allowed_chars = set("0123456789abcdefghijklmnopqrstuvwxyz-")
     if engine_name[0] == '-':
         return False
@@ -38,17 +40,18 @@ def main():
         st.error('Deze mogelijkheid is voor deze applicatie uitgezet', icon="❌")
         return
 
-    tab1, tab2, tab3 = st.tabs(["Bron doorzoeken", "Bron toevoegen", "Bron verwijderen"])
+    selected_sources = None
+    tab1, tab2, tab3 = st.tabs(["Bron doorzoeken", "Bron toevoegen", "Bron beheren"])
 
     with tab1:
         if len(get_custom_sources()) == 0:
             st.error('Je hebt nog geen toegang tot eigen bronnen', icon="❌")
         else:
-            results, search_args, query = results_form(custom_sources=True)
+            results, search_args, query, in_progress_container, selected_sources = results_form(custom_sources=True)
             show_result_tabs(results, search_args, query)
 
     with tab2:
-        if ENABLE_CUSTOM_SOURCE_CREATE is False:
+        if ENABLE_CUSTOM_SOURCE_CREATE is False and False:
             st.error('Deze mogelijkheid is (nog) uitgezet', icon="❌")
         else:
             custom_source_name = st.text_input(
@@ -75,7 +78,7 @@ def main():
 
                     success = handle_custom_source(custom_source_name_fmt, documents)
                     if success:
-                        st.success('De documenten worden verwerkt. Dit kan even duren..', icon="✅")
+                        st.success('De documenten worden verwerkt!', icon="✅")
                     else:
                         st.error('Er is iets foutgegaan..', icon="🚨")
 
@@ -85,30 +88,19 @@ def main():
                     kwargs={'documents': uploaded_files}
                 )
     with tab3:
-        if ENABLE_CUSTOM_SOURCE_DELETE is False:
-            st.error('Deze mogelijkheid is (nog) uitgezet', icon="❌")
+        if len(get_custom_sources()) == 0:
+            st.error('Je hebt nog geen toegang tot eigen bronnen', icon="❌")
         else:
-            def handle_delete(custom_source_to_remove):
-                try:
-                    delete_custom_source_engine(custom_source_to_remove)
-                    delete_custom_source_bucket(custom_source_to_remove)
-
-                    st.success(f"Bron {custom_source_to_remove} is verwijderd of bestond niet meer", icon="✅")
-                except (AppEngineError, MinioError):
-                    st.error('Er is iets foutgegaan..', icon="🚨")
-
-            custom_source = st.text_input(
-                'Welke bron wil je verwijderen?',
-                placeholder="naam-van-bron",
-                help="Zorg dat je niet de verkeerde bron verwijdert")
-
-            st.button(
-                "Bron verwijderen",
-                on_click=handle_delete,
-                kwargs={'custom_source_to_remove': custom_source}
-            )
+            show_manage_tab()
 
     focus_first_input()
+
+    # Should be placed at the end to prevent blocking the UI
+    if selected_sources is not None:
+        if check_custom_source_in_progress(selected_sources):
+            with in_progress_container:
+                with st.spinner('Het indexeren van de bron is nog bezig. De resultaten zijn mogelijk incompleet.'):
+                    wait_for_source_to_finish(selected_sources)
 
 
 if __name__ == '__main__':

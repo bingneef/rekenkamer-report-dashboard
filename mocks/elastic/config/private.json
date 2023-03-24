@@ -1,9 +1,12 @@
 {
-  "request": {
-    "method": "GET",
-    "path": "/api/as/v1/engines"
+  "httpRequest": {
+    "path": "/api/as/v1/engines",
+    "headers": {
+      "Authorization": "Bearer private-123"
+    }
   },
-  "response": {
+  "httpResponse": {
+    "statusCode": 200,
     "body": {
       "meta": {
         "page": {

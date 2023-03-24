@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "rekenkamer-report-dashboard"
+version = "0.1.0"
+description = ""
+authors = ["Bing Steup <bingsteup@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "rekenkamer_report_dashboard" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+streamlit = "^1.20.0"
+requests = "^2.28.2"
+minio = "^7.1.13"
+numpy = "^1.24.2"
+pandas = "^1.5.3"
+seaborn = "^0.12.2"
+ecs-logging = "^2.0.0"
+elastic-enterprise-search = {git = "https://github.com/bingneef/enterprise-search-python.git", rev = "main"}
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.2"
+playwright = "^1.31.1"
+pytest-cov = "^4.0.0"
+pytest-mock = "^3.10.0"
+flake8 = "^6.0.0"
+watchdog = "^3.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
