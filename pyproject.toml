@@ -10,7 +10,7 @@ packages = [{ include = "rekenkamer_report_dashboard" }]
 python = "^3.11"
 streamlit = "^1.20.0"
 requests = "^2.28.2"
-minio = "^7.1.13"
+minio = "^7.1.14"
 numpy = "^1.24.2"
 pandas = "^1.5.3"
 seaborn = "^0.12.2"
